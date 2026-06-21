@@ -4,8 +4,9 @@ use std::path::{Path, PathBuf};
 use serde::Serialize;
 
 use super::error::StorageError;
-use super::frontmatter::{self, Note, ORDER_LAST};
+use super::frontmatter::{self, Frontmatter, Note, ORDER_LAST};
 use super::path;
+use super::slug;
 
 /// Lightweight listing entry for a day's notes (no body).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -73,6 +74,44 @@ pub fn list_day(root: &Path, key: &str) -> Result<Vec<NoteSummary>, StorageError
     }
     notes.sort_by(|a, b| a.order.cmp(&b.order).then_with(|| a.title.cmp(&b.title)));
     Ok(notes)
+}
+
+/// Create a new project note for `key`: derive a slug from `title`, append after existing
+/// projects (`order = max + 1`), and write an empty note. Fails with `AlreadyExists` if the slug
+/// is already present, so a create never overwrites an existing note.
+pub fn create_project(
+    root: &Path,
+    key: &str,
+    title: &str,
+    color: &str,
+) -> Result<NoteSummary, StorageError> {
+    let slug = slug::slugify(title)?;
+    if path::note_path(root, key, &slug)?.exists() {
+        return Err(StorageError::AlreadyExists(slug));
+    }
+    let order = list_day(root, key)?
+        .iter()
+        .map(|n| n.order)
+        .filter(|&o| o != ORDER_LAST)
+        .max()
+        .map(|m| m + 1)
+        .unwrap_or(0);
+    let note = Note {
+        frontmatter: Frontmatter {
+            title: title.to_string(),
+            color: Some(color.to_string()),
+            order,
+            created: Some(key.to_string()),
+        },
+        body: String::new(),
+    };
+    write_note(root, key, &slug, &note)?;
+    Ok(NoteSummary {
+        slug,
+        title: title.to_string(),
+        color: Some(color.to_string()),
+        order,
+    })
 }
 
 #[cfg(test)]
@@ -159,5 +198,58 @@ mod tests {
         let listed = list_day(root.path(), "2026-06-21").unwrap();
         assert!(listed.is_empty());
         assert!(!root.path().join("2026-06-21").exists());
+    }
+
+    #[test]
+    fn create_project_writes_metadata_and_empty_body() {
+        let root = tempdir().unwrap();
+        let summary = create_project(root.path(), "2026-06-21", "Oakmond", "#E54D2E").unwrap();
+        assert_eq!(summary.slug, "oakmond");
+        let read = read_note(root.path(), "2026-06-21", "oakmond").unwrap();
+        assert_eq!(read.frontmatter.title, "Oakmond");
+        assert_eq!(read.frontmatter.color.as_deref(), Some("#E54D2E"));
+        assert_eq!(read.frontmatter.created.as_deref(), Some("2026-06-21"));
+        assert_eq!(read.body, "");
+    }
+
+    #[test]
+    fn create_project_slugifies_the_title() {
+        let root = tempdir().unwrap();
+        let summary = create_project(root.path(), "2026-06-21", "My Project!", "#000000").unwrap();
+        assert_eq!(summary.slug, "my-project");
+    }
+
+    #[test]
+    fn create_project_appends_order_after_existing() {
+        let root = tempdir().unwrap();
+        write_note(root.path(), "2026-06-21", "a", &note("A", 2, "")).unwrap();
+        let summary = create_project(root.path(), "2026-06-21", "Beta", "#111111").unwrap();
+        assert_eq!(summary.order, 3);
+    }
+
+    #[test]
+    fn create_project_first_gets_order_zero() {
+        let root = tempdir().unwrap();
+        let summary = create_project(root.path(), "2026-06-21", "First", "#222222").unwrap();
+        assert_eq!(summary.order, 0);
+    }
+
+    #[test]
+    fn create_project_rejects_empty_slug_title() {
+        let root = tempdir().unwrap();
+        assert!(matches!(
+            create_project(root.path(), "2026-06-21", "!!!", "#333333"),
+            Err(StorageError::InvalidSlug(_))
+        ));
+    }
+
+    #[test]
+    fn create_project_rejects_duplicate_slug() {
+        let root = tempdir().unwrap();
+        create_project(root.path(), "2026-06-21", "Oakmond", "#E54D2E").unwrap();
+        let again = create_project(root.path(), "2026-06-21", "Oakmond", "#000000");
+        assert!(matches!(again, Err(StorageError::AlreadyExists(_))));
+        let read = read_note(root.path(), "2026-06-21", "oakmond").unwrap();
+        assert_eq!(read.frontmatter.color.as_deref(), Some("#E54D2E"));
     }
 }

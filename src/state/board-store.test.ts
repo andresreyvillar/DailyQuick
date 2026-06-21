@@ -5,20 +5,33 @@ vi.mock("../lib/notes-api", () => ({
   readNote: vi.fn(),
   writeNote: vi.fn(),
   ensureDay: vi.fn(),
+  createProject: vi.fn(),
 }));
 
-import { listDay, readNote, writeNote } from "../lib/notes-api";
+import { createProject, listDay, readNote, writeNote } from "../lib/notes-api";
 import { loadOrientation, useBoardStore } from "./board-store";
 
 const mockListDay = vi.mocked(listDay);
 const mockReadNote = vi.mocked(readNote);
 const mockWriteNote = vi.mocked(writeNote);
+const mockCreateProject = vi.mocked(createProject);
 
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
   useBoardStore.setState({ dayKey: null, projects: [], orientation: "vertical" });
 });
+
+async function seedOakmond() {
+  mockListDay.mockResolvedValue([
+    { slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 },
+  ]);
+  mockReadNote.mockResolvedValue({
+    frontmatter: { title: "Oakmond", color: "#E54D2E", order: 1, created: "2026-06-21" },
+    body: "keep",
+  });
+  await useBoardStore.getState().loadDay("2026-06-21");
+}
 
 describe("board store", () => {
   it("loadDay stores projects in the order returned by list_day", async () => {
@@ -55,21 +68,47 @@ describe("board store", () => {
   });
 
   it("persistBody writes the new body while preserving frontmatter", async () => {
-    mockListDay.mockResolvedValue([
-      { slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 },
-    ]);
-    mockReadNote.mockResolvedValue({
-      frontmatter: { title: "Oakmond", color: "#E54D2E", order: 1, created: "2026-06-21" },
-      body: "old",
-    });
-    await useBoardStore.getState().loadDay("2026-06-21");
-
+    await seedOakmond();
     useBoardStore.getState().setBody("oakmond", "new body");
     await useBoardStore.getState().persistBody("oakmond");
-
     expect(mockWriteNote).toHaveBeenCalledWith("2026-06-21", "oakmond", {
       frontmatter: { title: "Oakmond", color: "#E54D2E", order: 1, created: "2026-06-21" },
       body: "new body",
     });
+  });
+
+  it("createProject calls the backend then reloads the day", async () => {
+    mockListDay.mockResolvedValue([]);
+    await useBoardStore.getState().loadDay("2026-06-21");
+
+    mockCreateProject.mockResolvedValue({ slug: "new", title: "New", color: "#fff", order: 0 });
+    mockListDay.mockResolvedValue([{ slug: "new", title: "New", color: "#fff", order: 0 }]);
+    mockReadNote.mockResolvedValue({ frontmatter: { title: "New", color: "#fff", order: 0 }, body: "" });
+
+    await useBoardStore.getState().createProject("New", "#fff");
+
+    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-21", "New", "#fff");
+    expect(useBoardStore.getState().projects.map((p) => p.slug)).toEqual(["new"]);
+  });
+
+  it("setColor persists the new color and updates the store", async () => {
+    await seedOakmond();
+    await useBoardStore.getState().setColor("oakmond", "#3E63DD");
+    expect(mockWriteNote).toHaveBeenCalledWith("2026-06-21", "oakmond", {
+      frontmatter: { title: "Oakmond", color: "#3E63DD", order: 1, created: "2026-06-21" },
+      body: "keep",
+    });
+    expect(useBoardStore.getState().projects[0].frontmatter.color).toBe("#3E63DD");
+  });
+
+  it("rename persists the new title and keeps the slug", async () => {
+    await seedOakmond();
+    await useBoardStore.getState().rename("oakmond", "Oakmond HQ");
+    expect(mockWriteNote).toHaveBeenCalledWith("2026-06-21", "oakmond", {
+      frontmatter: { title: "Oakmond HQ", color: "#E54D2E", order: 1, created: "2026-06-21" },
+      body: "keep",
+    });
+    expect(useBoardStore.getState().projects[0].slug).toBe("oakmond");
+    expect(useBoardStore.getState().projects[0].frontmatter.title).toBe("Oakmond HQ");
   });
 });

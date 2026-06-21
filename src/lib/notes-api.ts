@@ -46,3 +46,13 @@ export async function readNote(key: string, slug: string): Promise<Note> {
 export async function listDay(key: string): Promise<NoteSummary[]> {
   return z.array(noteSummarySchema).parse(await invoke("list_day", { key }));
 }
+
+/** Create a project for `key` (title + color); returns its summary. */
+export async function createProject(
+  key: string,
+  title: string,
+  color: string,
+): Promise<NoteSummary> {
+  if (!title.trim()) throw new Error("title is required");
+  return noteSummarySchema.parse(await invoke("create_project", { key, title, color }));
+}

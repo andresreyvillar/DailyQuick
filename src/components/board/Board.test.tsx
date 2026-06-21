@@ -9,6 +9,9 @@ vi.mock("../../lib/notes-api", () => ({
   createProject: vi.fn(),
 }));
 
+// Stub the Milkdown editor (ProseMirror can't render in jsdom).
+vi.mock("../editor/MarkdownEditor", () => ({ MarkdownEditor: () => null }));
+
 import { listDay, readNote } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";
 import { Board } from "./Board";

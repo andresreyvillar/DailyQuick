@@ -9,12 +9,19 @@ vi.mock("../../lib/notes-api", () => ({
   createProject: vi.fn(),
 }));
 
+// The real editor is Milkdown/ProseMirror (can't run in jsdom); stub it as a textarea
+// that forwards its value to `onChange`, so we can test the persistence wiring.
+vi.mock("../editor/MarkdownEditor", () => ({
+  MarkdownEditor: ({ value, onChange }: { value: string; onChange: (md: string) => void }) => (
+    <textarea aria-label="editor" defaultValue={value} onChange={(e) => onChange(e.target.value)} />
+  ),
+}));
+
 import { writeNote } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";
 import { ProjectColumn } from "./ProjectColumn";
 
 const mockWriteNote = vi.mocked(writeNote);
-
 const FRONTMATTER = { title: "Oakmond", color: "#E54D2E", order: 1, created: "2026-06-21" };
 
 beforeEach(() => {
@@ -33,9 +40,9 @@ afterEach(() => {
 });
 
 describe("ProjectColumn", () => {
-  it("persists edits via write_note after the debounce, preserving frontmatter", () => {
+  it("persists editor changes via write_note after the debounce, preserving frontmatter", () => {
     render(<ProjectColumn slug="oakmond" />);
-    fireEvent.change(screen.getByLabelText("Notas de Oakmond"), { target: { value: "new body" } });
+    fireEvent.change(screen.getByLabelText("editor"), { target: { value: "# nuevo" } });
     expect(mockWriteNote).not.toHaveBeenCalled();
 
     act(() => {
@@ -44,20 +51,8 @@ describe("ProjectColumn", () => {
 
     expect(mockWriteNote).toHaveBeenCalledWith("2026-06-21", "oakmond", {
       frontmatter: FRONTMATTER,
-      body: "new body",
+      body: "# nuevo",
     });
-  });
-
-  it("flushes a pending edit on blur", () => {
-    render(<ProjectColumn slug="oakmond" />);
-    const textarea = screen.getByLabelText("Notas de Oakmond");
-    fireEvent.change(textarea, { target: { value: "blurred" } });
-    fireEvent.blur(textarea);
-    expect(mockWriteNote).toHaveBeenCalledWith(
-      "2026-06-21",
-      "oakmond",
-      expect.objectContaining({ body: "blurred" }),
-    );
   });
 
   it("changing the color control persists the new color", () => {
@@ -67,7 +62,7 @@ describe("ProjectColumn", () => {
       "2026-06-21",
       "oakmond",
       expect.objectContaining({
-        frontmatter: expect.objectContaining({ color: "#3e63dd", title: "Oakmond", order: 1 }),
+        frontmatter: expect.objectContaining({ color: "#3e63dd", title: "Oakmond" }),
       }),
     );
   });

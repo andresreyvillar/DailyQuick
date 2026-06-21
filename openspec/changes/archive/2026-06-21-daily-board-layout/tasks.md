@@ -55,4 +55,4 @@
 
 - [x] 9.1 Run `npm run verify:change` — OpenSpec validate, `tsc`, `lint`, `vitest`, `cargo test`, `cargo clippy` all green
 - [x] 9.2 Confirm every spec scenario maps to at least one passing test
-- [ ] 9.3 Open/update the PR for this change; merge only when the gate is green
+- [x] 9.3 Open/update the PR for this change; merge only when the gate is green

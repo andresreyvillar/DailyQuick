@@ -1,4 +1,5 @@
 import { useBoardStore } from "../../state/board-store";
+import { AddProjectButton } from "./AddProjectButton";
 import { DayHeader } from "./DayHeader";
 import { OrientationToggle } from "./OrientationToggle";
 import { ProjectColumn } from "./ProjectColumn";
@@ -16,7 +17,10 @@ export function Board() {
     <main className="flex h-screen flex-col">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <DayHeader />
-        <OrientationToggle />
+        <div className="flex items-center gap-2">
+          <AddProjectButton />
+          <OrientationToggle />
+        </div>
       </div>
 
       {projects.length === 0 ? (

@@ -16,7 +16,8 @@ pub fn run() {
             commands::notes::ensure_day,
             commands::notes::write_note,
             commands::notes::read_note,
-            commands::notes::list_day
+            commands::notes::list_day,
+            commands::notes::create_project
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

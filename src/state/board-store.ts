@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import {
+  createProject as apiCreateProject,
   listDay,
   readNote,
   writeNote,
@@ -32,6 +33,9 @@ type BoardState = {
   toggleOrientation: () => void;
   setBody: (slug: string, body: string) => void;
   persistBody: (slug: string) => Promise<void>;
+  createProject: (title: string, color: string) => Promise<void>;
+  setColor: (slug: string, color: string) => Promise<void>;
+  rename: (slug: string, title: string) => Promise<void>;
 };
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -72,5 +76,32 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     if (!project) return;
     // Preserve the full frontmatter; only the body changed.
     await writeNote(dayKey, slug, { frontmatter: project.frontmatter, body: project.body });
+  },
+
+  async createProject(title, color) {
+    const { dayKey } = get();
+    if (!dayKey) return;
+    await apiCreateProject(dayKey, title, color);
+    await get().loadDay(dayKey);
+  },
+
+  async setColor(slug, color) {
+    const { dayKey, projects } = get();
+    if (!dayKey) return;
+    const project = projects.find((p) => p.slug === slug);
+    if (!project) return;
+    const frontmatter = { ...project.frontmatter, color };
+    await writeNote(dayKey, slug, { frontmatter, body: project.body });
+    set({ projects: projects.map((p) => (p.slug === slug ? { ...p, frontmatter } : p)) });
+  },
+
+  async rename(slug, title) {
+    const { dayKey, projects } = get();
+    if (!dayKey) return;
+    const project = projects.find((p) => p.slug === slug);
+    if (!project) return;
+    const frontmatter = { ...project.frontmatter, title };
+    await writeNote(dayKey, slug, { frontmatter, body: project.body });
+    set({ projects: projects.map((p) => (p.slug === slug ? { ...p, frontmatter } : p)) });
   },
 }));

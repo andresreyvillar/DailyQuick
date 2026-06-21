@@ -10,6 +10,8 @@ pub enum StorageError {
     InvalidSlug(String),
     #[error("note not found")]
     NotFound,
+    #[error("project already exists: {0}")]
+    AlreadyExists(String),
     #[error("frontmatter parse error: {0}")]
     Parse(String),
     #[error("io error: {0}")]

@@ -28,3 +28,12 @@ pub fn read_note(key: String, slug: String) -> Result<Note, StorageError> {
 pub fn list_day(key: String) -> Result<Vec<NoteSummary>, StorageError> {
     store::list_day(&root()?, &key)
 }
+
+#[tauri::command]
+pub fn create_project(
+    key: String,
+    title: String,
+    color: String,
+) -> Result<NoteSummary, StorageError> {
+    store::create_project(&root()?, &key, &title, &color)
+}

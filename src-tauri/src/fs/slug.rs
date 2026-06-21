@@ -1,9 +1,6 @@
 use super::error::StorageError;
 
 /// Derive a filesystem-safe slug (`[a-z0-9-]+`) from a project title.
-// Part of the day-storage contract (spec: "slug is derived for the filename");
-// wired into the UI by the upcoming `project-management` slice.
-#[allow(dead_code)]
 pub fn slugify(title: &str) -> Result<String, StorageError> {
     let mut slug = String::new();
     let mut pending_dash = false;

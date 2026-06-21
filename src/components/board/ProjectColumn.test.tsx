@@ -6,6 +6,7 @@ vi.mock("../../lib/notes-api", () => ({
   readNote: vi.fn(),
   writeNote: vi.fn(),
   ensureDay: vi.fn(),
+  createProject: vi.fn(),
 }));
 
 import { writeNote } from "../../lib/notes-api";
@@ -34,9 +35,7 @@ afterEach(() => {
 describe("ProjectColumn", () => {
   it("persists edits via write_note after the debounce, preserving frontmatter", () => {
     render(<ProjectColumn slug="oakmond" />);
-    const textarea = screen.getByLabelText("Notas de Oakmond");
-
-    fireEvent.change(textarea, { target: { value: "new body" } });
+    fireEvent.change(screen.getByLabelText("Notas de Oakmond"), { target: { value: "new body" } });
     expect(mockWriteNote).not.toHaveBeenCalled();
 
     act(() => {
@@ -52,14 +51,39 @@ describe("ProjectColumn", () => {
   it("flushes a pending edit on blur", () => {
     render(<ProjectColumn slug="oakmond" />);
     const textarea = screen.getByLabelText("Notas de Oakmond");
-
     fireEvent.change(textarea, { target: { value: "blurred" } });
     fireEvent.blur(textarea);
-
     expect(mockWriteNote).toHaveBeenCalledWith(
       "2026-06-21",
       "oakmond",
       expect.objectContaining({ body: "blurred" }),
+    );
+  });
+
+  it("changing the color control persists the new color", () => {
+    render(<ProjectColumn slug="oakmond" />);
+    fireEvent.change(screen.getByLabelText("Color de Oakmond"), { target: { value: "#3e63dd" } });
+    expect(mockWriteNote).toHaveBeenCalledWith(
+      "2026-06-21",
+      "oakmond",
+      expect.objectContaining({
+        frontmatter: expect.objectContaining({ color: "#3e63dd", title: "Oakmond", order: 1 }),
+      }),
+    );
+  });
+
+  it("renaming via the title keeps the slug and persists the new title", () => {
+    render(<ProjectColumn slug="oakmond" />);
+    fireEvent.dblClick(screen.getByRole("heading", { level: 2, name: "Oakmond" }));
+    const input = screen.getByLabelText("Renombrar Oakmond");
+    fireEvent.change(input, { target: { value: "Oakmond HQ" } });
+    fireEvent.blur(input);
+    expect(mockWriteNote).toHaveBeenCalledWith(
+      "2026-06-21",
+      "oakmond",
+      expect.objectContaining({
+        frontmatter: expect.objectContaining({ title: "Oakmond HQ" }),
+      }),
     );
   });
 });

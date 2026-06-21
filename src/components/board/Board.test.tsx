@@ -6,6 +6,7 @@ vi.mock("../../lib/notes-api", () => ({
   readNote: vi.fn(),
   writeNote: vi.fn(),
   ensureDay: vi.fn(),
+  createProject: vi.fn(),
 }));
 
 import { listDay, readNote } from "../../lib/notes-api";

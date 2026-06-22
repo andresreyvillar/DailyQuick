@@ -16,6 +16,14 @@ pub struct CalendarEvent {
     pub end: String,
     pub all_day: bool,
     pub calendar: String,
+    pub calendar_id: String,
+}
+
+/// A calendar the user can toggle on/off.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CalendarInfo {
+    pub id: String,
+    pub title: String,
 }
 
 /// Local day bounds `[00:00, next-day 00:00)` for a `YYYY-MM-DD` key.
@@ -37,6 +45,20 @@ pub fn list_events(key: &str) -> Result<Vec<CalendarEvent>, StorageError> {
     #[cfg(not(target_os = "macos"))]
     {
         let _ = (start, end);
+        Err(StorageError::Calendar(
+            "calendar is only available on macOS".to_string(),
+        ))
+    }
+}
+
+/// List the user's Apple event calendars (read-only).
+pub fn list_calendars() -> Result<Vec<CalendarInfo>, StorageError> {
+    #[cfg(target_os = "macos")]
+    {
+        eventkit::fetch_calendars()
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
         Err(StorageError::Calendar(
             "calendar is only available on macOS".to_string(),
         ))

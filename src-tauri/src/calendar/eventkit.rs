@@ -5,10 +5,10 @@ use block2::RcBlock;
 use chrono::{Local, NaiveDateTime, TimeZone};
 use objc2::rc::Retained;
 use objc2::runtime::Bool;
-use objc2_event_kit::EKEventStore;
+use objc2_event_kit::{EKEntityType, EKEventStore};
 use objc2_foundation::{NSDate, NSError};
 
-use super::CalendarEvent;
+use super::{CalendarEvent, CalendarInfo};
 use crate::fs::StorageError;
 
 fn naive_to_nsdate(naive: NaiveDateTime) -> Retained<NSDate> {
@@ -29,26 +29,30 @@ fn nsdate_to_iso(date: &NSDate) -> String {
         .unwrap_or_default()
 }
 
+/// Request read access to events, blocking on the completion handler. Returns whether granted.
+fn request_access(store: &EKEventStore) -> bool {
+    let (tx, rx) = mpsc::channel::<bool>();
+    let handler = RcBlock::new(move |granted: Bool, _error: *mut NSError| {
+        let _ = tx.send(granted.as_bool());
+    });
+    unsafe {
+        store.requestFullAccessToEventsWithCompletion(&*handler as *const _ as *mut _);
+    }
+    rx.recv_timeout(Duration::from_secs(60)).unwrap_or(false)
+}
+
 /// Fetch the day's events from Apple Calendar (read-only), requesting access if needed.
 pub fn fetch_events(
     start: NaiveDateTime,
     end: NaiveDateTime,
 ) -> Result<Vec<CalendarEvent>, StorageError> {
+    let store = unsafe { EKEventStore::new() };
+    if !request_access(&store) {
+        return Err(StorageError::Calendar(
+            "calendar access not granted".to_string(),
+        ));
+    }
     unsafe {
-        let store = EKEventStore::new();
-
-        let (tx, rx) = mpsc::channel::<bool>();
-        let handler = RcBlock::new(move |granted: Bool, _error: *mut NSError| {
-            let _ = tx.send(granted.as_bool());
-        });
-        store.requestFullAccessToEventsWithCompletion(&*handler as *const _ as *mut _);
-        let granted = rx.recv_timeout(Duration::from_secs(60)).unwrap_or(false);
-        if !granted {
-            return Err(StorageError::Calendar(
-                "calendar access not granted".to_string(),
-            ));
-        }
-
         let start_date = naive_to_nsdate(start);
         let end_date = naive_to_nsdate(end);
         let predicate =
@@ -57,18 +61,44 @@ pub fn fetch_events(
 
         let mut out = Vec::new();
         for event in events.iter() {
+            let calendar = event.calendar();
             out.push(CalendarEvent {
                 title: event.title().to_string(),
                 start: nsdate_to_iso(&event.startDate()),
                 end: nsdate_to_iso(&event.endDate()),
                 all_day: event.isAllDay(),
-                calendar: event
-                    .calendar()
+                calendar: calendar
+                    .as_ref()
                     .map(|c| c.title().to_string())
+                    .unwrap_or_default(),
+                calendar_id: calendar
+                    .map(|c| c.calendarIdentifier().to_string())
                     .unwrap_or_default(),
             });
         }
         out.sort_by(|a, b| a.start.cmp(&b.start));
+        Ok(out)
+    }
+}
+
+/// List the user's event calendars (read-only).
+pub fn fetch_calendars() -> Result<Vec<CalendarInfo>, StorageError> {
+    let store = unsafe { EKEventStore::new() };
+    if !request_access(&store) {
+        return Err(StorageError::Calendar(
+            "calendar access not granted".to_string(),
+        ));
+    }
+    unsafe {
+        let calendars = store.calendarsForEntityType(EKEntityType::Event);
+        let mut out = Vec::new();
+        for calendar in calendars.iter() {
+            out.push(CalendarInfo {
+                id: calendar.calendarIdentifier().to_string(),
+                title: calendar.title().to_string(),
+            });
+        }
+        out.sort_by(|a, b| a.title.cmp(&b.title));
         Ok(out)
     }
 }

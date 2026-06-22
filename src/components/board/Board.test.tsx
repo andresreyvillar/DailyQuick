@@ -13,8 +13,9 @@ vi.mock("../../lib/notes-api", () => ({
 
 // Stub the Milkdown editor (ProseMirror can't render in jsdom).
 vi.mock("../editor/MarkdownEditor", () => ({ MarkdownEditor: () => null }));
-// Stub the calendar strip (its own tests cover it; avoids a native/async fetch in board tests).
+// Stub the calendar strip + filter (their own tests cover them; avoids native/async fetches here).
 vi.mock("../calendar/CalendarEvents", () => ({ CalendarEvents: () => null }));
+vi.mock("../calendar/CalendarFilter", () => ({ CalendarFilter: () => null }));
 
 import { listDay, readNote } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";

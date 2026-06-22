@@ -5,6 +5,7 @@ vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 import { invoke } from "@tauri-apps/api/core";
 import {
   calendarEventSchema,
+  calendarInfoSchema,
   createProject,
   noteSchema,
   search,
@@ -91,8 +92,16 @@ describe("calendarEventSchema", () => {
         end: "2026-06-22T09:15:00",
         all_day: false,
         calendar: "Work",
+        calendar_id: "work",
       }).success,
     ).toBe(true);
     expect(calendarEventSchema.safeParse({ title: "x", all_day: "no" }).success).toBe(false);
+  });
+});
+
+describe("calendarInfoSchema", () => {
+  it("accepts a valid calendar and rejects a malformed one", () => {
+    expect(calendarInfoSchema.safeParse({ id: "work", title: "Work" }).success).toBe(true);
+    expect(calendarInfoSchema.safeParse({ id: 1 }).success).toBe(false);
   });
 });

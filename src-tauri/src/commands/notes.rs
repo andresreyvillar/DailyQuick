@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use crate::fs::frontmatter::Note;
+use crate::fs::search::{self, SearchHit};
 use crate::fs::store::{self, NoteSummary};
 use crate::fs::{path, StorageError};
 
@@ -36,4 +37,9 @@ pub fn create_project(
     color: String,
 ) -> Result<NoteSummary, StorageError> {
     store::create_project(&root()?, &key, &title, &color)
+}
+
+#[tauri::command]
+pub fn search_notes(query: String) -> Result<Vec<SearchHit>, StorageError> {
+    search::search(&root()?, &query)
 }

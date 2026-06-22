@@ -5,6 +5,7 @@ import { DayHeader } from "./DayHeader";
 import { DayNavigator } from "./DayNavigator";
 import { OrientationToggle } from "./OrientationToggle";
 import { ProjectColumn } from "./ProjectColumn";
+import { SearchPanel } from "./SearchPanel";
 
 /** The current-day board: date header + per-project panes + split toggle. */
 export function Board() {
@@ -24,6 +25,7 @@ export function Board() {
           <DayNavigator />
         </div>
         <div className="flex items-center gap-2">
+          <SearchPanel />
           <AddProjectButton />
           <OrientationToggle />
         </div>

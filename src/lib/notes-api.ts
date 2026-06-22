@@ -56,3 +56,19 @@ export async function createProject(
   if (!title.trim()) throw new Error("title is required");
   return noteSummarySchema.parse(await invoke("create_project", { key, title, color }));
 }
+
+/** A single search result, mirrors the Rust `SearchHit`. */
+export const searchHitSchema = z.object({
+  day_key: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  snippet: z.string(),
+});
+
+export type SearchHit = z.infer<typeof searchHitSchema>;
+
+/** Search all notes for `query`; a blank query returns no results without calling the backend. */
+export async function search(query: string): Promise<SearchHit[]> {
+  if (!query.trim()) return [];
+  return z.array(searchHitSchema).parse(await invoke("search_notes", { query }));
+}

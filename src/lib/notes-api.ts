@@ -72,3 +72,19 @@ export async function search(query: string): Promise<SearchHit[]> {
   if (!query.trim()) return [];
   return z.array(searchHitSchema).parse(await invoke("search_notes", { query }));
 }
+
+/** A read-only calendar event, mirrors the Rust `CalendarEvent`. */
+export const calendarEventSchema = z.object({
+  title: z.string(),
+  start: z.string(),
+  end: z.string(),
+  all_day: z.boolean(),
+  calendar: z.string(),
+});
+
+export type CalendarEvent = z.infer<typeof calendarEventSchema>;
+
+/** List the day's Apple Calendar events (read-only). Rejects if access is denied. */
+export async function listEvents(dayKey: string): Promise<CalendarEvent[]> {
+  return z.array(calendarEventSchema).parse(await invoke("list_events", { key: dayKey }));
+}

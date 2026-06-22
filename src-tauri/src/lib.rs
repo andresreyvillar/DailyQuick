@@ -1,3 +1,4 @@
+mod calendar;
 mod commands;
 mod fs;
 
@@ -18,7 +19,8 @@ pub fn run() {
             commands::notes::read_note,
             commands::notes::list_day,
             commands::notes::create_project,
-            commands::notes::search_notes
+            commands::notes::search_notes,
+            commands::notes::list_events
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

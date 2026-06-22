@@ -43,3 +43,8 @@ pub fn create_project(
 pub fn search_notes(query: String) -> Result<Vec<SearchHit>, StorageError> {
     search::search(&root()?, &query)
 }
+
+#[tauri::command]
+pub fn list_events(key: String) -> Result<Vec<crate::calendar::CalendarEvent>, StorageError> {
+    crate::calendar::list_events(&key)
+}

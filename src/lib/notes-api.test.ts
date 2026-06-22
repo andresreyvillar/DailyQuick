@@ -3,7 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
 import { invoke } from "@tauri-apps/api/core";
-import { createProject, noteSchema, search, searchHitSchema } from "./notes-api";
+import {
+  calendarEventSchema,
+  createProject,
+  noteSchema,
+  search,
+  searchHitSchema,
+} from "./notes-api";
 
 const mockInvoke = vi.mocked(invoke);
 
@@ -73,5 +79,20 @@ describe("search", () => {
   it("returns empty for a blank query without calling the backend", async () => {
     expect(await search("   ")).toEqual([]);
     expect(mockInvoke).not.toHaveBeenCalled();
+  });
+});
+
+describe("calendarEventSchema", () => {
+  it("accepts a valid event and rejects a malformed one", () => {
+    expect(
+      calendarEventSchema.safeParse({
+        title: "Standup",
+        start: "2026-06-22T09:00:00",
+        end: "2026-06-22T09:15:00",
+        all_day: false,
+        calendar: "Work",
+      }).success,
+    ).toBe(true);
+    expect(calendarEventSchema.safeParse({ title: "x", all_day: "no" }).success).toBe(false);
   });
 });

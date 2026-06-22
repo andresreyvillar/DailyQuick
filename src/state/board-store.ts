@@ -5,9 +5,13 @@ import {
   listDay,
   readNote,
   writeNote,
+  type CalendarEvent,
   type Frontmatter,
 } from "../lib/notes-api";
 import { addDays, todayKey } from "../lib/date-key";
+import { eventBlock, eventProjectBody } from "../lib/event-markdown";
+
+const EVENT_PROJECT_COLOR = "#3E63DD";
 
 export type Orientation = "vertical" | "horizontal";
 
@@ -41,12 +45,17 @@ type BoardState = {
   goToPreviousDay: () => Promise<void>;
   goToNextDay: () => Promise<void>;
   goToToday: () => Promise<void>;
+  /** Per-project counter bumped on external writes, to force the editor to remount + reload. */
+  revisions: Record<string, number>;
+  createProjectFromEvent: (event: CalendarEvent) => Promise<void>;
+  addEventToProject: (slug: string, event: CalendarEvent) => Promise<void>;
 };
 
 export const useBoardStore = create<BoardState>((set, get) => ({
   dayKey: null,
   projects: [],
   orientation: loadOrientation(),
+  revisions: {},
 
   async loadDay(key) {
     const summaries = await listDay(key);
@@ -128,5 +137,34 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   async goToToday() {
     await get().loadDay(todayKey());
+  },
+
+  async createProjectFromEvent(event) {
+    const { dayKey } = get();
+    if (!dayKey) return;
+    const summary = await apiCreateProject(dayKey, event.title, EVENT_PROJECT_COLOR);
+    await writeNote(dayKey, summary.slug, {
+      frontmatter: {
+        title: summary.title,
+        color: summary.color,
+        order: summary.order,
+        created: dayKey,
+      },
+      body: eventProjectBody(event),
+    });
+    await get().loadDay(dayKey);
+  },
+
+  async addEventToProject(slug, event) {
+    const { dayKey, projects } = get();
+    if (!dayKey) return;
+    const project = projects.find((p) => p.slug === slug);
+    if (!project) return;
+    const body = project.body ? `${project.body}\n\n${eventBlock(event)}` : eventBlock(event);
+    await writeNote(dayKey, slug, { frontmatter: project.frontmatter, body });
+    set({
+      projects: get().projects.map((p) => (p.slug === slug ? { ...p, body } : p)),
+      revisions: { ...get().revisions, [slug]: (get().revisions[slug] ?? 0) + 1 },
+    });
   },
 }));

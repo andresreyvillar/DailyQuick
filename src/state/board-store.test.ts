@@ -21,8 +21,17 @@ const mockCreateProject = vi.mocked(createProject);
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
-  useBoardStore.setState({ dayKey: null, projects: [], orientation: "vertical" });
+  useBoardStore.setState({ dayKey: null, projects: [], orientation: "vertical", revisions: {} });
 });
+
+const meeting = {
+  title: "Oakmond daily",
+  start: "2026-06-22T09:00:00",
+  end: "2026-06-22T09:15:00",
+  all_day: false,
+  calendar: "Work",
+  calendar_id: "work",
+};
 
 async function seedOakmond() {
   mockListDay.mockResolvedValue([
@@ -154,5 +163,47 @@ describe("board store", () => {
 
     expect(mockEnsureDay).not.toHaveBeenCalled();
     expect(mockWriteNote).not.toHaveBeenCalled();
+  });
+
+  it("createProjectFromEvent creates a project with the seeded body then reloads", async () => {
+    mockListDay.mockResolvedValue([]);
+    await useBoardStore.getState().loadDay("2026-06-22");
+
+    mockCreateProject.mockResolvedValue({ slug: "oakmond-daily", title: "Oakmond daily", color: "#3E63DD", order: 0 });
+    mockListDay.mockResolvedValue([{ slug: "oakmond-daily", title: "Oakmond daily", color: "#3E63DD", order: 0 }]);
+    mockReadNote.mockResolvedValue({ frontmatter: { title: "Oakmond daily", color: "#3E63DD", order: 0 }, body: "" });
+
+    await useBoardStore.getState().createProjectFromEvent(meeting);
+
+    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Oakmond daily", "#3E63DD");
+    const writeArgs = mockWriteNote.mock.calls[0];
+    expect(writeArgs[0]).toBe("2026-06-22");
+    expect(writeArgs[1]).toBe("oakmond-daily");
+    expect(writeArgs[2].body).toContain("## Notas");
+  });
+
+  it("createProjectFromEvent surfaces AlreadyExists (no write)", async () => {
+    mockListDay.mockResolvedValue([]);
+    await useBoardStore.getState().loadDay("2026-06-22");
+    mockCreateProject.mockRejectedValue({ kind: "AlreadyExists" });
+
+    await expect(useBoardStore.getState().createProjectFromEvent(meeting)).rejects.toBeDefined();
+    expect(mockWriteNote).not.toHaveBeenCalled();
+  });
+
+  it("addEventToProject appends a block, preserving content, and bumps the revision", async () => {
+    mockListDay.mockResolvedValue([{ slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 }]);
+    mockReadNote.mockResolvedValue({
+      frontmatter: { title: "Oakmond", color: "#E54D2E", order: 1, created: "2026-06-22" },
+      body: "# Tareas",
+    });
+    await useBoardStore.getState().loadDay("2026-06-22");
+
+    await useBoardStore.getState().addEventToProject("oakmond", meeting);
+
+    const writeArgs = mockWriteNote.mock.calls[mockWriteNote.mock.calls.length - 1];
+    expect(writeArgs[2].body).toContain("# Tareas");
+    expect(writeArgs[2].body).toContain("> **Oakmond daily**");
+    expect(useBoardStore.getState().revisions.oakmond).toBe(1);
   });
 });

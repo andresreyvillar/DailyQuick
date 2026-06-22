@@ -20,7 +20,8 @@ pub fn run() {
             commands::notes::list_day,
             commands::notes::create_project,
             commands::notes::search_notes,
-            commands::notes::list_events
+            commands::notes::list_events,
+            commands::notes::list_calendars
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 
+import { visibleEvents } from "../../lib/calendar-filter";
 import { listEvents, type CalendarEvent } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";
+import { useCalendarStore } from "../../state/calendar-store";
 
 type State =
   | { kind: "loading" }
@@ -18,6 +20,7 @@ function formatTime(iso: string): string {
 /** Read-only strip of the selected day's Apple Calendar events. */
 export function CalendarEvents() {
   const dayKey = useBoardStore((s) => s.dayKey);
+  const hidden = useCalendarStore((s) => s.hidden);
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
@@ -46,12 +49,13 @@ export function CalendarEvents() {
       </div>
     );
   }
-  if (state.events.length === 0) {
+  const events = visibleEvents(state.events, hidden);
+  if (events.length === 0) {
     return <div className="text-sm text-gray-400">Sin eventos.</div>;
   }
   return (
     <ul className="flex flex-wrap gap-2 text-sm">
-      {state.events.map((event, index) => (
+      {events.map((event, index) => (
         <li key={`${event.start}:${index}`} className="rounded bg-gray-100 px-2 py-0.5">
           <span className="font-medium">{event.title}</span>
           {!event.all_day && <span className="ml-1 text-gray-500">{formatTime(event.start)}</span>}

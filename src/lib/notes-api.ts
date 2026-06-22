@@ -80,6 +80,7 @@ export const calendarEventSchema = z.object({
   end: z.string(),
   all_day: z.boolean(),
   calendar: z.string(),
+  calendar_id: z.string(),
 });
 
 export type CalendarEvent = z.infer<typeof calendarEventSchema>;
@@ -87,4 +88,17 @@ export type CalendarEvent = z.infer<typeof calendarEventSchema>;
 /** List the day's Apple Calendar events (read-only). Rejects if access is denied. */
 export async function listEvents(dayKey: string): Promise<CalendarEvent[]> {
   return z.array(calendarEventSchema).parse(await invoke("list_events", { key: dayKey }));
+}
+
+/** A calendar the user can toggle, mirrors the Rust `CalendarInfo`. */
+export const calendarInfoSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+});
+
+export type CalendarInfo = z.infer<typeof calendarInfoSchema>;
+
+/** List the user's Apple event calendars (read-only). */
+export async function listCalendars(): Promise<CalendarInfo[]> {
+  return z.array(calendarInfoSchema).parse(await invoke("list_calendars"));
 }

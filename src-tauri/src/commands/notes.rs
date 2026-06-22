@@ -48,3 +48,8 @@ pub fn search_notes(query: String) -> Result<Vec<SearchHit>, StorageError> {
 pub fn list_events(key: String) -> Result<Vec<crate::calendar::CalendarEvent>, StorageError> {
     crate::calendar::list_events(&key)
 }
+
+#[tauri::command]
+pub fn list_calendars() -> Result<Vec<crate::calendar::CalendarInfo>, StorageError> {
+    crate::calendar::list_calendars()
+}

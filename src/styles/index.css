@@ -34,6 +34,10 @@
   --band-border-width: 1px;
   --band-border-style: solid;
   --board-image: none;
+  --chip-radius: 8px;
+  --chip-icon-radius: 5px;
+  --chip-icon-shadow: none;
+  --chip-icon-rot: 0deg;
 }
 
 /* Bullet Journal — warm cream paper, handwritten display font, dotted board, dashed bands. */
@@ -63,6 +67,10 @@ html[data-theme="bujo"] {
   --band-border-width: 2px;
   --band-border-style: dashed;
   --board-image: radial-gradient(#d8cbac 1.4px, transparent 1.5px);
+  --chip-radius: 9px;
+  --chip-icon-radius: 6px;
+  --chip-icon-shadow: 0 1px 2px rgba(80, 60, 20, 0.25);
+  --chip-icon-rot: -4deg;
 }
 
 /* Cítrico — cool violet-tinted whites with an animated gradient strip. */
@@ -92,6 +100,10 @@ html[data-theme="citrus"] {
   --band-border-width: 1px;
   --band-border-style: solid;
   --board-image: none;
+  --chip-radius: 10px;
+  --chip-icon-radius: 7px;
+  --chip-icon-shadow: none;
+  --chip-icon-rot: 0deg;
 }
 
 /* Token-reading helpers so the chrome restyles from the theme vars without per-component branches. */

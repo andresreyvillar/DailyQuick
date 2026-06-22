@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { accentForKey } from "../../lib/accent-palette";
 import { visibleEvents } from "../../lib/calendar-filter";
 import { listEvents, type CalendarEvent } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";
@@ -96,24 +97,43 @@ export function CalendarEvents() {
                 <button
                   type="button"
                   aria-label={`Acciones de ${event.title}`}
+                  title={event.title}
                   onClick={() => {
                     setSubmenu(false);
                     setOpenKey(open ? null : key);
                   }}
-                  className="flex h-[26px] items-center gap-[7px] rounded-[7px] border border-[#E9EBEF] bg-surface pl-2.5 pr-[7px] hover:border-[#CFD4DB] hover:bg-[#FCFCFD]"
+                  className="flex h-[38px] w-[150px] items-center gap-2 overflow-hidden rounded-[var(--chip-radius,8px)] border border-line-field bg-surface px-[9px] hover:border-[#CFD4DB]"
                 >
-                  <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-disabled" aria-hidden="true" />
-                  {!event.all_day && <span className="font-mono text-[11px] text-faint">{hhmm(event.start)}</span>}
-                  <span className="text-[12.5px] text-body">{event.title}</span>
-                  <span className={`text-[14px] ${open ? "text-muted" : "text-[#BCC1C9]"}`} aria-hidden="true">
-                    +
+                  <span
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--chip-icon-radius,5px)]"
+                    style={{
+                      backgroundColor: accentForKey(event.calendar_id),
+                      boxShadow: "var(--chip-icon-shadow, none)",
+                      transform: "rotate(var(--chip-icon-rot, 0deg))",
+                    }}
+                    aria-hidden="true"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <rect x="2.2" y="3.4" width="11.6" height="10.4" rx="2" stroke="#fff" strokeWidth="1.4" />
+                      <line x1="2.2" y1="6.5" x2="13.8" y2="6.5" stroke="#fff" strokeWidth="1.4" />
+                      <line x1="5.4" y1="1.6" x2="5.4" y2="3.6" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" />
+                      <line x1="10.6" y1="1.6" x2="10.6" y2="3.6" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" />
+                    </svg>
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col justify-center gap-px">
+                    {!event.all_day && (
+                      <span className="font-mono text-[10px] leading-none tracking-[0.02em] text-faint">
+                        {hhmm(event.start)}
+                      </span>
+                    )}
+                    <span className="truncate text-[12px] leading-tight text-body">{event.title}</span>
                   </span>
                 </button>
 
                 {open && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={close} aria-hidden="true" />
-                    <div className="absolute left-0 top-[33px] z-50 w-[248px] rounded-[10px] border border-line bg-surface p-1 shadow-[0_8px_28px_rgba(20,24,33,0.16)]">
+                    <div className="absolute left-0 top-[44px] z-50 w-[248px] rounded-[10px] border border-line bg-surface p-1 shadow-[0_8px_28px_rgba(20,24,33,0.16)]">
                       {!submenu ? (
                         <>
                           <div className="flex items-center gap-1.5 px-2 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.05em] text-faint">

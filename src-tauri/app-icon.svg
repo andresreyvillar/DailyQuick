@@ -1,0 +1,31 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tile" x1="512" y1="96" x2="512" y2="928" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5C8CEC"/>
+      <stop offset="1" stop-color="#4571C9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- App tile (rounded square, macOS-style) -->
+  <rect x="96" y="96" width="832" height="832" rx="190" fill="url(#tile)"/>
+
+  <!-- Daily note card -->
+  <rect x="286" y="258" width="452" height="508" rx="52" fill="#FFFFFF"/>
+
+  <!-- Project header: accent dot + title bar -->
+  <circle cx="372" cy="356" r="22" fill="#2F9AA8"/>
+  <rect x="410" y="338" width="238" height="34" rx="17" fill="#D5DBE4"/>
+
+  <!-- Task 1 (done): accent-filled checkbox + check -->
+  <rect x="350" y="430" width="46" height="46" rx="13" fill="#4F7FD6"/>
+  <path d="M361 453 L371 464 L387 441" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect x="416" y="440" width="232" height="28" rx="14" fill="#C7CED8"/>
+
+  <!-- Task 2 -->
+  <rect x="350" y="520" width="46" height="46" rx="13" fill="#FFFFFF" stroke="#CBD2DC" stroke-width="6"/>
+  <rect x="416" y="530" width="196" height="28" rx="14" fill="#DCE1E9"/>
+
+  <!-- Task 3 -->
+  <rect x="350" y="610" width="46" height="46" rx="13" fill="#FFFFFF" stroke="#CBD2DC" stroke-width="6"/>
+  <rect x="416" y="620" width="170" height="28" rx="14" fill="#E3E7EE"/>
+</svg>

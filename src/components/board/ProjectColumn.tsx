@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useBoardStore } from "../../state/board-store";
+import { useThemeStore } from "../../state/theme-store";
 import { useDebouncedSave } from "../../features/day/useDebouncedSave";
 import { MarkdownEditor } from "../editor/MarkdownEditor";
 
@@ -14,6 +15,7 @@ export function ProjectColumn({ slug }: { slug: string }) {
   const setColor = useBoardStore((s) => s.setColor);
   const rename = useBoardStore((s) => s.rename);
   const deleteProject = useBoardStore((s) => s.deleteProject);
+  const theme = useThemeStore((s) => s.theme);
   const { onChange } = useDebouncedSave(() => persistBody(slug));
 
   const [editingTitle, setEditingTitle] = useState(false);
@@ -40,12 +42,12 @@ export function ProjectColumn({ slug }: { slug: string }) {
   return (
     // No overflow on the section/body: keeps the editor's slash menu from being clipped
     // (rounded corners are done per-corner instead). Restoring per-column scroll is follow-up F.2.
-    <section className="flex h-full flex-col rounded-[10px] border border-line bg-surface shadow-[0_1px_2px_rgba(20,24,33,0.04)]">
+    <section className="col-card flex h-full flex-col border border-line bg-surface">
       <header
-        className="flex items-center gap-2 rounded-t-[10px] px-3.5 py-[11px]"
+        className="col-band relative flex items-center gap-2 rounded-t-[var(--radius-col)] px-3.5 py-[11px]"
         style={{
           backgroundColor: `color-mix(in srgb, ${accent} 8%, white)`,
-          borderBottom: `1px solid color-mix(in srgb, ${accent} 22%, white)`,
+          borderBottomColor: `color-mix(in srgb, ${accent} 22%, white)`,
         }}
         data-accent-color={accent}
       >
@@ -66,11 +68,11 @@ export function ProjectColumn({ slug }: { slug: string }) {
             onKeyDown={(e) => {
               if (e.key === "Enter") (e.target as HTMLInputElement).blur();
             }}
-            className="flex-1 bg-transparent text-[14.5px] font-semibold text-strong outline-none"
+            className="col-title flex-1 bg-transparent font-semibold text-strong outline-none"
           />
         ) : (
           <h2
-            className="flex-1 cursor-text truncate text-[14.5px] font-semibold text-strong"
+            className="col-title flex-1 cursor-text truncate font-semibold text-strong"
             onDoubleClick={() => {
               setDraftTitle(title);
               setEditingTitle(true);
@@ -136,8 +138,20 @@ export function ProjectColumn({ slug }: { slug: string }) {
             </>
           )}
         </div>
+        {theme === "bujo" && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-12 top-1 h-[17px] w-[50px] -rotate-6 rounded-[1px]"
+            style={{
+              background: `repeating-linear-gradient(45deg, ${accent} 0 6px, color-mix(in srgb, ${accent} 55%, white) 6px 12px)`,
+              opacity: 0.5,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.12)",
+              animation: "floatY 4s ease-in-out infinite",
+            }}
+          />
+        )}
       </header>
-      <div className="flex-1 rounded-b-[10px] bg-surface">
+      <div className="flex-1 rounded-b-[var(--radius-col)] bg-surface">
         <MarkdownEditor
           key={`${dayKey}:${slug}:${revision}`}
           value={project.body}

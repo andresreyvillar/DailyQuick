@@ -27,8 +27,8 @@
 
 - [x] 4.1 Run `npm run verify:change` — OpenSpec validate, `tsc`, `lint`, `vitest`, `cargo test`, `cargo clippy` all green
 - [x] 4.2 Every behavioral spec scenario maps to a passing test
-- [ ] 4.3 Manual visual check via `npm run tauri dev` against the mockup (tokens, spacing, hover/focus, popover, toast)
-- [ ] 4.4 Open the PR; merge when the gate is green AND the visual check passes
+- [x] 4.3 Manual visual check via `npm run tauri dev` against the mockup (tokens, spacing, hover/focus, popover, toast)
+- [x] 4.4 Open the PR; merge when the gate is green AND the visual check passes
 
 ## 5. Follow-ups (tracked, not in this slice)
 

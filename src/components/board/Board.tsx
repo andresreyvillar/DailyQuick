@@ -33,7 +33,7 @@ export function Board() {
       ) : (
         <div className={`flex flex-1 divide-gray-200 ${layout}`}>
           {projects.map((project) => (
-            <div key={project.slug} className="flex-1 overflow-auto">
+            <div key={project.slug} className="flex-1 min-w-0">
               <ProjectColumn slug={project.slug} />
             </div>
           ))}

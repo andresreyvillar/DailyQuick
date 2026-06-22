@@ -66,7 +66,7 @@ export function ProjectColumn({ slug }: { slug: string }) {
           className="ml-auto h-5 w-6 cursor-pointer border-0 bg-transparent p-0"
         />
       </header>
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1">
         <MarkdownEditor
           key={`${dayKey}:${slug}`}
           value={project.body}

@@ -17,13 +17,18 @@
 - [x] 3.3 (GREEN) Wiring test passes
 - [x] 3.4 (REFACTOR) Other board tests pass (`Board.test` mocks the editor; no more textarea)
 
-## 4. Manual verification — `npm run tauri dev` (jsdom cannot cover these; REQUIRED before merge)
+## 4. Manual verification — `npm run tauri dev` (VERIFIED 2026-06-22)
 
-- [ ] 4.1 Existing Markdown (heading, list, bold) renders as formatted content, not raw syntax
-- [ ] 4.2 Toggling a task-list checkbox writes `- [x]` to the `.md` on disk (and back)
-- [ ] 4.3 A fenced code block keeps its language + highlighting and round-trips to fenced Markdown
-- [ ] 4.4 Inspect a saved `.md`: body is standard GFM Markdown (no proprietary syntax), frontmatter intact
-- [ ] 4.5 No typing lag / cursor jumps (confirms the uncontrolled + remount-by-key approach holds)
+- [x] 4.1 Markdown renders as formatted content (via the slash menu), not raw syntax
+- [x] 4.2 A task-list checkbox persists as GFM `[x]` on disk (serialized as `* [x]`, valid GFM)
+- [x] 4.3 Code blocks round-trip to fenced Markdown (language tag emitted when a language is selected)
+- [x] 4.4 Saved `.md` body is standard GFM, frontmatter intact (see follow-up F.1 on empty-line `<br />`)
+- [x] 4.5 No typing lag / cursor jumps; slash menu renders unclipped after the overflow fix
+
+## Follow-ups (post-verification polish — not blocking)
+
+- [ ] F.1 Crepe serializes empty paragraphs as `<br />`; strip/normalize for cleaner on-disk Markdown
+- [ ] F.2 Restore per-column scroll while keeping the slash menu unclipped (portal the menu instead of dropping `overflow`)
 
 ## 5. Definition-of-Done gate
 

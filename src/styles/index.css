@@ -166,3 +166,31 @@ body {
   background: var(--color-surface);
   -webkit-font-smoothing: antialiased;
 }
+
+/* Theme the Milkdown editor content: map Crepe's variables to our theme-aware tokens.
+   `#root` raises specificity above Crepe's own `.milkdown` defaults; `--col-accent` (set per editor)
+   carries the project accent. */
+#root .milkdown {
+  --crepe-color-background: var(--color-surface);
+  --crepe-color-on-background: var(--color-body);
+  --crepe-color-surface: var(--color-field);
+  --crepe-color-surface-low: var(--color-line-soft);
+  --crepe-color-on-surface: var(--color-body);
+  --crepe-color-on-surface-variant: var(--color-muted);
+  --crepe-color-outline: var(--color-disabled);
+  --crepe-color-primary: var(--col-accent, var(--color-strong));
+  --crepe-color-secondary: var(--color-line);
+  --crepe-color-hover: var(--color-hover);
+  --crepe-color-selected: var(--color-line);
+  --crepe-color-inline-area: var(--color-line-soft);
+  --crepe-color-inline-code: var(--color-body);
+  --crepe-font-default: var(--font-sans);
+  --crepe-font-title: var(--font-display);
+  --crepe-font-code: var(--font-mono);
+}
+#root .milkdown :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--color-strong);
+}
+#root .milkdown .milkdown-list-item-block li .label-wrapper .checked svg {
+  fill: var(--crepe-color-primary);
+}

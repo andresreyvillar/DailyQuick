@@ -12,8 +12,21 @@ vi.mock("../../lib/notes-api", () => ({
 // The real editor is Milkdown/ProseMirror (can't run in jsdom); stub it as a textarea
 // that forwards its value to `onChange`, so we can test the persistence wiring.
 vi.mock("../editor/MarkdownEditor", () => ({
-  MarkdownEditor: ({ value, onChange }: { value: string; onChange: (md: string) => void }) => (
-    <textarea aria-label="editor" defaultValue={value} onChange={(e) => onChange(e.target.value)} />
+  MarkdownEditor: ({
+    value,
+    onChange,
+    accent,
+  }: {
+    value: string;
+    onChange: (md: string) => void;
+    accent?: string;
+  }) => (
+    <textarea
+      aria-label="editor"
+      data-accent={accent}
+      defaultValue={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
   ),
 }));
 
@@ -132,5 +145,10 @@ describe("ProjectColumn", () => {
   it("does not show the template prompt when the note has content", () => {
     render(<ProjectColumn slug="oakmond" />);
     expect(screen.queryByLabelText("Plantilla básica")).not.toBeInTheDocument();
+  });
+
+  it("passes the project's accent to the editor", () => {
+    render(<ProjectColumn slug="oakmond" />);
+    expect(screen.getByLabelText("editor")).toHaveAttribute("data-accent", "#E54D2E");
   });
 });

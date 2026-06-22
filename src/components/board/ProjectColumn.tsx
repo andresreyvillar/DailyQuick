@@ -182,6 +182,7 @@ export function ProjectColumn({ slug }: { slug: string }) {
         <MarkdownEditor
           key={`${dayKey}:${slug}:${revision}`}
           value={project.body}
+          accent={accent}
           onChange={(markdown) => {
             setBody(slug, markdown);
             onChange();

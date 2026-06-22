@@ -1,7 +1,7 @@
 import { Crepe } from "@milkdown/crepe";
 import { listenerCtx } from "@milkdown/kit/plugin/listener";
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/frame.css";
@@ -11,9 +11,11 @@ import { EditorToolbar } from "./EditorToolbar";
 type Props = {
   value: string;
   onChange: (markdown: string) => void;
+  /** Project accent used (via the `--col-accent` CSS variable) for checkboxes/links/selection. */
+  accent?: string;
 };
 
-function CrepeEditor({ value, onChange }: Props) {
+function CrepeEditor({ value, onChange, accent }: Props) {
   const [focused, setFocused] = useState(false);
 
   useEditor((root) => {
@@ -31,6 +33,7 @@ function CrepeEditor({ value, onChange }: Props) {
     // the link field), so moving focus between them does not hide it.
     <div
       className="flex h-full flex-col"
+      style={accent ? ({ "--col-accent": accent } as CSSProperties) : undefined}
       onFocus={() => setFocused(true)}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
@@ -49,10 +52,10 @@ function CrepeEditor({ value, onChange }: Props) {
  * `value` and emits GFM Markdown via `onChange`. Remount it (React `key`) to load a different note.
  * A formatting toolbar appears at the top while the editor has focus.
  */
-export function MarkdownEditor({ value, onChange }: Props) {
+export function MarkdownEditor({ value, onChange, accent }: Props) {
   return (
     <MilkdownProvider>
-      <CrepeEditor value={value} onChange={onChange} />
+      <CrepeEditor value={value} onChange={onChange} accent={accent} />
     </MilkdownProvider>
   );
 }

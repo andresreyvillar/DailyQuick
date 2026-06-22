@@ -2,7 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+  <!-- Read-only calendar access (EventKit). Merged into the bundle's Info.plist by the Tauri macOS bundler. -->
   <key>NSCalendarsFullAccessUsageDescription</key>
-  <string>DailyQuick shows your day's calendar events alongside your notes.</string>
+  <string>DailyQuick muestra los eventos de tu calendario junto a las notas del día (solo lectura).</string>
+  <key>NSCalendarsUsageDescription</key>
+  <string>DailyQuick muestra los eventos de tu calendario junto a las notas del día (solo lectura).</string>
 </dict>
 </plist>

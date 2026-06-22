@@ -6,18 +6,24 @@ export function DayNavigator() {
   const goToToday = useBoardStore((s) => s.goToToday);
   const goToNextDay = useBoardStore((s) => s.goToNextDay);
 
-  const btn = "rounded border border-gray-300 px-2 py-1 text-sm hover:bg-gray-100";
+  const arrow =
+    "flex h-7 w-7 items-center justify-center rounded-[7px] text-[15px] text-muted hover:bg-hover";
 
   return (
     <div className="flex items-center gap-1">
-      <button type="button" aria-label="Día anterior" onClick={() => void goToPreviousDay()} className={btn}>
-        ←
+      <button type="button" aria-label="Día anterior" onClick={() => void goToPreviousDay()} className={arrow}>
+        ‹
       </button>
-      <button type="button" aria-label="Hoy" onClick={() => void goToToday()} className={btn}>
+      <button
+        type="button"
+        aria-label="Hoy"
+        onClick={() => void goToToday()}
+        className="h-7 rounded-[7px] border border-line px-3 text-[13px] font-semibold text-body hover:bg-hover"
+      >
         Hoy
       </button>
-      <button type="button" aria-label="Día siguiente" onClick={() => void goToNextDay()} className={btn}>
-        →
+      <button type="button" aria-label="Día siguiente" onClick={() => void goToNextDay()} className={arrow}>
+        ›
       </button>
     </div>
   );

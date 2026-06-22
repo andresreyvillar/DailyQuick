@@ -9,46 +9,49 @@ import { OrientationToggle } from "./OrientationToggle";
 import { ProjectColumn } from "./ProjectColumn";
 import { SearchPanel } from "./SearchPanel";
 
-/** The current-day board: date header + per-project panes + split toggle. */
+/** The current-day board: header + calendar strip + per-project panes. */
 export function Board() {
   const projects = useBoardStore((s) => s.projects);
   const orientation = useBoardStore((s) => s.orientation);
   const dayKey = useBoardStore((s) => s.dayKey);
 
   // "vertical" split = side-by-side columns; "horizontal" split = stacked rows.
-  const layout =
-    orientation === "vertical" ? "flex-row divide-x" : "flex-col divide-y";
+  const direction = orientation === "vertical" ? "flex-row" : "flex-col";
 
   return (
-    <main className="flex h-screen flex-col">
-      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center gap-3">
+    <main className="flex h-screen flex-col bg-surface">
+      <header className="flex items-center justify-between border-b border-line-soft px-5 py-3.5">
+        <div className="flex items-center gap-3.5">
           <DayHeader date={dayKey ? parseDateKey(dayKey) : new Date()} />
           <DayNavigator />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <SearchPanel />
           <AddProjectButton />
           <OrientationToggle />
         </div>
-      </div>
+      </header>
 
-      <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-2">
-        <CalendarFilter />
+      <div className="flex items-center gap-2.5 border-b border-line-soft bg-subtle px-5 py-[9px]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">Hoy</span>
         <CalendarEvents />
+        <CalendarFilter />
       </div>
 
       {projects.length === 0 ? (
         <div
           data-testid="empty-state"
-          className="flex flex-1 items-center justify-center text-gray-500"
+          className="flex flex-1 flex-col items-center justify-center gap-1 bg-sunken text-center"
         >
-          No hay proyectos para hoy todavía.
+          <p className="text-[14px] font-medium text-muted">No hay proyectos para hoy todavía.</p>
+          <p className="text-[12.5px] text-faint">
+            Crea uno con “+ Nuevo proyecto” o desde un evento del calendario.
+          </p>
         </div>
       ) : (
-        <div className={`flex flex-1 divide-gray-200 ${layout}`}>
+        <div className={`flex flex-1 gap-3.5 overflow-auto bg-sunken p-4 ${direction}`}>
           {projects.map((project) => (
-            <div key={project.slug} className="flex-1 min-w-0">
+            <div key={project.slug} className="min-w-0 flex-1">
               <ProjectColumn slug={project.slug} />
             </div>
           ))}

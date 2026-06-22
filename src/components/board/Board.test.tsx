@@ -71,6 +71,8 @@ describe("Board", () => {
     mockListDay.mockResolvedValue([]);
     await useBoardStore.getState().loadDay("2026-06-20");
     render(<Board />);
-    expect(screen.getByText(/20 de junio de 2026/)).toBeInTheDocument();
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading).toHaveTextContent("20 de junio");
+    expect(heading).toHaveTextContent("2026");
   });
 });

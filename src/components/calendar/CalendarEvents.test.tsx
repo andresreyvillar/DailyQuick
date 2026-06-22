@@ -18,6 +18,21 @@ import { CalendarEvents } from "./CalendarEvents";
 
 const mockListEvents = vi.mocked(listEvents);
 
+const standup = {
+  title: "Standup",
+  start: "2026-06-22T09:00:00",
+  end: "2026-06-22T09:15:00",
+  all_day: false,
+  calendar: "Work",
+  calendar_id: "work",
+};
+
+const oakmond = {
+  slug: "oakmond",
+  frontmatter: { title: "Oakmond", color: "#E54D2E", order: 1 },
+  body: "",
+};
+
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
@@ -26,23 +41,10 @@ beforeEach(() => {
 });
 
 describe("CalendarEvents", () => {
-  it("renders the day's events", async () => {
-    mockListEvents.mockResolvedValue([
-      { title: "Standup", start: "2026-06-22T09:00:00", end: "2026-06-22T09:15:00", all_day: false, calendar: "Work", calendar_id: "work" },
-    ]);
+  it("renders the day's events as chips", async () => {
+    mockListEvents.mockResolvedValue([standup]);
     render(<CalendarEvents />);
     expect(await screen.findByText("Standup")).toBeInTheDocument();
-  });
-
-  it("hides events from hidden calendars", async () => {
-    useCalendarStore.setState({ hidden: ["bday"] });
-    mockListEvents.mockResolvedValue([
-      { title: "Standup", start: "2026-06-22T09:00:00", end: "2026-06-22T09:15:00", all_day: false, calendar: "Work", calendar_id: "work" },
-      { title: "Cumpleaños", start: "2026-06-22T00:00:00", end: "2026-06-23T00:00:00", all_day: true, calendar: "Birthdays", calendar_id: "bday" },
-    ]);
-    render(<CalendarEvents />);
-    expect(await screen.findByText("Standup")).toBeInTheDocument();
-    expect(screen.queryByText("Cumpleaños")).not.toBeInTheDocument();
   });
 
   it("shows an empty state when there are no events", async () => {
@@ -59,31 +61,58 @@ describe("CalendarEvents", () => {
     );
   });
 
-  it("creates a project from an event", async () => {
-    const createProjectFromEvent = vi.fn().mockResolvedValue(undefined);
-    useBoardStore.setState({ createProjectFromEvent });
+  it("hides events from hidden calendars", async () => {
+    useCalendarStore.setState({ hidden: ["bday"] });
     mockListEvents.mockResolvedValue([
-      { title: "Standup", start: "2026-06-22T09:00:00", end: "2026-06-22T09:15:00", all_day: false, calendar: "Work", calendar_id: "work" },
+      standup,
+      { title: "Cumpleaños", start: "2026-06-22T00:00:00", end: "2026-06-23T00:00:00", all_day: true, calendar: "Birthdays", calendar_id: "bday" },
     ]);
     render(<CalendarEvents />);
-
-    fireEvent.click(await screen.findByLabelText("Crear proyecto desde Standup"));
-    expect(createProjectFromEvent).toHaveBeenCalledWith(expect.objectContaining({ title: "Standup" }));
+    expect(await screen.findByText("Standup")).toBeInTheDocument();
+    expect(screen.queryByText("Cumpleaños")).not.toBeInTheDocument();
   });
 
-  it("adds an event to a chosen project", async () => {
-    const addEventToProject = vi.fn().mockResolvedValue(undefined);
-    useBoardStore.setState({
-      addEventToProject,
-      projects: [{ slug: "oakmond", frontmatter: { title: "Oakmond", color: "#E54D2E", order: 1 }, body: "" }],
-    });
-    mockListEvents.mockResolvedValue([
-      { title: "Standup", start: "2026-06-22T09:00:00", end: "2026-06-22T09:15:00", all_day: false, calendar: "Work", calendar_id: "work" },
-    ]);
+  it("opens the actions popover on chip click", async () => {
+    mockListEvents.mockResolvedValue([standup]);
     render(<CalendarEvents />);
+    fireEvent.click(await screen.findByRole("button", { name: "Acciones de Standup" }));
+    expect(screen.getByText("Nuevo proyecto")).toBeInTheDocument();
+    expect(screen.getByText("Añadir a un proyecto…")).toBeInTheDocument();
+  });
 
-    const select = await screen.findByLabelText("Añadir Standup a un proyecto");
-    fireEvent.change(select, { target: { value: "oakmond" } });
+  it("creates a project from the menu and shows a toast", async () => {
+    const createProjectFromEvent = vi.fn().mockResolvedValue(undefined);
+    useBoardStore.setState({ createProjectFromEvent });
+    mockListEvents.mockResolvedValue([standup]);
+    render(<CalendarEvents />);
+    fireEvent.click(await screen.findByRole("button", { name: "Acciones de Standup" }));
+    fireEvent.click(screen.getByText("Nuevo proyecto"));
+    expect(createProjectFromEvent).toHaveBeenCalledWith(expect.objectContaining({ title: "Standup" }));
+    expect(await screen.findByText(/Nuevo proyecto creado desde/)).toBeInTheDocument();
+  });
+
+  it("adds the event to a project via the submenu and shows a toast", async () => {
+    const addEventToProject = vi.fn().mockResolvedValue(undefined);
+    useBoardStore.setState({ addEventToProject, projects: [oakmond] });
+    mockListEvents.mockResolvedValue([standup]);
+    render(<CalendarEvents />);
+    fireEvent.click(await screen.findByRole("button", { name: "Acciones de Standup" }));
+    fireEvent.click(screen.getByText("Añadir a un proyecto…"));
+    fireEvent.click(screen.getByText("Oakmond"));
     expect(addEventToProject).toHaveBeenCalledWith("oakmond", expect.objectContaining({ title: "Standup" }));
+    expect(await screen.findByText(/añadido a "Oakmond"/)).toBeInTheDocument();
+  });
+
+  it("back returns to the root menu and outside click closes the popover", async () => {
+    useBoardStore.setState({ projects: [oakmond] });
+    mockListEvents.mockResolvedValue([standup]);
+    render(<CalendarEvents />);
+    fireEvent.click(await screen.findByRole("button", { name: "Acciones de Standup" }));
+    fireEvent.click(screen.getByText("Añadir a un proyecto…"));
+    fireEvent.click(screen.getByLabelText("Volver"));
+    expect(screen.getByText("Nuevo proyecto")).toBeInTheDocument();
+
+    fireEvent.click(document.querySelector(".inset-0") as Element);
+    expect(screen.queryByText("Nuevo proyecto")).not.toBeInTheDocument();
   });
 });

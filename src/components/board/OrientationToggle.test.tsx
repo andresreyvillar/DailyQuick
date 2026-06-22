@@ -10,15 +10,16 @@ beforeEach(() => {
 });
 
 describe("OrientationToggle", () => {
-  it("toggles orientation and persists the choice", () => {
+  it("switches orientation via the segmented control and persists the choice", () => {
     render(<OrientationToggle />);
-    const button = screen.getByRole("button", { name: /orientación/i });
-    expect(button).toHaveTextContent("Columnas");
+    const columns = screen.getByRole("button", { name: "División en columnas" });
+    const rows = screen.getByRole("button", { name: "División en filas" });
+    expect(columns).toHaveAttribute("aria-pressed", "true");
 
-    fireEvent.click(button);
+    fireEvent.click(rows);
 
     expect(useBoardStore.getState().orientation).toBe("horizontal");
     expect(localStorage.getItem("dailyquick:orientation")).toBe("horizontal");
-    expect(button).toHaveTextContent("Filas");
+    expect(rows).toHaveAttribute("aria-pressed", "true");
   });
 });

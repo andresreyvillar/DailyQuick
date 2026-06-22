@@ -1,15 +1,16 @@
-const FORMATTER = new Intl.DateTimeFormat("es-ES", {
+const DATE_FMT = new Intl.DateTimeFormat("es-ES", {
   weekday: "long",
   day: "numeric",
   month: "long",
-  year: "numeric",
 });
 
-/** Prominent header showing the board's date in a human-readable form. */
+/** Prominent header showing the selected day's date (the visual anchor). */
 export function DayHeader({ date = new Date() }: { date?: Date }) {
+  const label = DATE_FMT.format(date);
+  const capitalized = label.charAt(0).toUpperCase() + label.slice(1);
   return (
-    <h1 className="text-2xl font-bold capitalize tracking-tight">
-      {FORMATTER.format(date)}
+    <h1 className="text-[18px] font-semibold tracking-[-0.01em] text-strong">
+      {capitalized} <span className="font-medium text-disabled">· {date.getFullYear()}</span>
     </h1>
   );
 }

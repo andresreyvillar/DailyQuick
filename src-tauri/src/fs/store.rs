@@ -114,6 +114,18 @@ pub fn create_project(
     })
 }
 
+/// Delete a single project's note for `key`. Removes only `<slug>.md` — never the day folder or any
+/// other file. Path validation via `note_path` confines the slug to the day folder. Returns
+/// `NotFound` if the note does not exist.
+pub fn delete_note(root: &Path, key: &str, slug: &str) -> Result<(), StorageError> {
+    let target = path::note_path(root, key, slug)?;
+    match fs::remove_file(&target) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Err(StorageError::NotFound),
+        Err(e) => Err(StorageError::Io(e.to_string())),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::frontmatter::Frontmatter;
@@ -251,5 +263,34 @@ mod tests {
         assert!(matches!(again, Err(StorageError::AlreadyExists(_))));
         let read = read_note(root.path(), "2026-06-21", "oakmond").unwrap();
         assert_eq!(read.frontmatter.color.as_deref(), Some("#E54D2E"));
+    }
+
+    #[test]
+    fn delete_removes_only_the_target_note() {
+        let root = tempdir().unwrap();
+        write_note(root.path(), "2026-06-22", "oakmond", &note("Oakmond", 1, "x")).unwrap();
+        write_note(root.path(), "2026-06-22", "personal", &note("Personal", 2, "y")).unwrap();
+        write_note(root.path(), "2026-06-21", "oakmond", &note("Oakmond", 1, "z")).unwrap();
+
+        delete_note(root.path(), "2026-06-22", "oakmond").unwrap();
+
+        assert!(matches!(
+            read_note(root.path(), "2026-06-22", "oakmond"),
+            Err(StorageError::NotFound)
+        ));
+        assert_eq!(read_note(root.path(), "2026-06-22", "personal").unwrap().body, "y");
+        assert_eq!(read_note(root.path(), "2026-06-21", "oakmond").unwrap().body, "z");
+        assert!(root.path().join("2026-06-22").is_dir());
+    }
+
+    #[test]
+    fn delete_missing_note_returns_not_found_and_leaves_siblings() {
+        let root = tempdir().unwrap();
+        write_note(root.path(), "2026-06-22", "oakmond", &note("Oakmond", 1, "x")).unwrap();
+        assert!(matches!(
+            delete_note(root.path(), "2026-06-22", "ghost"),
+            Err(StorageError::NotFound)
+        ));
+        assert_eq!(read_note(root.path(), "2026-06-22", "oakmond").unwrap().body, "x");
     }
 }

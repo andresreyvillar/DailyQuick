@@ -81,4 +81,39 @@ describe("ProjectColumn", () => {
       }),
     );
   });
+
+  it("opens an actions menu with a destructive delete item", () => {
+    render(<ProjectColumn slug="oakmond" />);
+    fireEvent.click(screen.getByRole("button", { name: "Acciones de Oakmond" }));
+    expect(screen.getByText("Eliminar proyecto")).toBeInTheDocument();
+  });
+
+  it("clicking delete shows an inline confirmation and deletes nothing yet", () => {
+    const deleteProject = vi.fn();
+    useBoardStore.setState({ deleteProject });
+    render(<ProjectColumn slug="oakmond" />);
+    fireEvent.click(screen.getByRole("button", { name: "Acciones de Oakmond" }));
+    fireEvent.click(screen.getByText("Eliminar proyecto"));
+    expect(screen.getByText(/¿Eliminar/)).toBeInTheDocument();
+    expect(deleteProject).not.toHaveBeenCalled();
+  });
+
+  it("confirming calls deleteProject; cancel closes without deleting", () => {
+    const deleteProject = vi.fn();
+    useBoardStore.setState({ deleteProject });
+    render(<ProjectColumn slug="oakmond" />);
+
+    // Cancel leaves the project alone.
+    fireEvent.click(screen.getByRole("button", { name: "Acciones de Oakmond" }));
+    fireEvent.click(screen.getByText("Eliminar proyecto"));
+    fireEvent.click(screen.getByText("Cancelar"));
+    expect(deleteProject).not.toHaveBeenCalled();
+    expect(screen.queryByText(/¿Eliminar/)).not.toBeInTheDocument();
+
+    // Confirming deletes.
+    fireEvent.click(screen.getByRole("button", { name: "Acciones de Oakmond" }));
+    fireEvent.click(screen.getByText("Eliminar proyecto"));
+    fireEvent.click(screen.getByRole("button", { name: "Eliminar" }));
+    expect(deleteProject).toHaveBeenCalledWith("oakmond");
+  });
 });

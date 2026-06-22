@@ -40,6 +40,11 @@ pub fn create_project(
 }
 
 #[tauri::command]
+pub fn delete_note(key: String, slug: String) -> Result<(), StorageError> {
+    store::delete_note(&root()?, &key, &slug)
+}
+
+#[tauri::command]
 pub fn search_notes(query: String) -> Result<Vec<SearchHit>, StorageError> {
     search::search(&root()?, &query)
 }

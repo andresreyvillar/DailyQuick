@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import {
   createProject as apiCreateProject,
+  deleteNote as apiDeleteNote,
   listDay,
   readNote,
   writeNote,
@@ -39,6 +40,7 @@ type BoardState = {
   setBody: (slug: string, body: string) => void;
   persistBody: (slug: string) => Promise<void>;
   createProject: (title: string, color: string) => Promise<void>;
+  deleteProject: (slug: string) => Promise<void>;
   setColor: (slug: string, color: string) => Promise<void>;
   rename: (slug: string, title: string) => Promise<void>;
   goToDay: (key: string) => Promise<void>;
@@ -97,6 +99,15 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     if (!dayKey) return;
     await apiCreateProject(dayKey, title, color);
     await get().loadDay(dayKey);
+  },
+
+  async deleteProject(slug) {
+    const { dayKey } = get();
+    if (!dayKey) return;
+    await apiDeleteNote(dayKey, slug);
+    const revisions = { ...get().revisions };
+    delete revisions[slug];
+    set({ projects: get().projects.filter((p) => p.slug !== slug), revisions });
   },
 
   async setColor(slug, color) {

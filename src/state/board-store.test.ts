@@ -6,9 +6,10 @@ vi.mock("../lib/notes-api", () => ({
   writeNote: vi.fn(),
   ensureDay: vi.fn(),
   createProject: vi.fn(),
+  deleteNote: vi.fn(),
 }));
 
-import { createProject, ensureDay, listDay, readNote, writeNote } from "../lib/notes-api";
+import { createProject, deleteNote, ensureDay, listDay, readNote, writeNote } from "../lib/notes-api";
 import { todayKey } from "../lib/date-key";
 import { loadOrientation, useBoardStore } from "./board-store";
 
@@ -17,6 +18,7 @@ const mockReadNote = vi.mocked(readNote);
 const mockWriteNote = vi.mocked(writeNote);
 const mockEnsureDay = vi.mocked(ensureDay);
 const mockCreateProject = vi.mocked(createProject);
+const mockDeleteNote = vi.mocked(deleteNote);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -205,5 +207,26 @@ describe("board store", () => {
     expect(writeArgs[2].body).toContain("# Tareas");
     expect(writeArgs[2].body).toContain("> **Oakmond daily**");
     expect(useBoardStore.getState().revisions.oakmond).toBe(1);
+  });
+
+  it("deleteProject deletes the note, drops the project, and clears its revision", async () => {
+    mockListDay.mockResolvedValue([
+      { slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 },
+      { slug: "personal", title: "Personal", color: null, order: 2 },
+    ]);
+    mockReadNote.mockImplementation(async (_key, slug) => ({
+      frontmatter: { title: slug, color: null, order: 1 },
+      body: `body-${slug}`,
+    }));
+    await useBoardStore.getState().loadDay("2026-06-21");
+    useBoardStore.setState({ revisions: { oakmond: 3, personal: 1 } });
+    mockDeleteNote.mockResolvedValue(undefined);
+
+    await useBoardStore.getState().deleteProject("oakmond");
+
+    expect(mockDeleteNote).toHaveBeenCalledWith("2026-06-21", "oakmond");
+    const { projects, revisions } = useBoardStore.getState();
+    expect(projects.map((p) => p.slug)).toEqual(["personal"]);
+    expect(revisions).toEqual({ personal: 1 });
   });
 });

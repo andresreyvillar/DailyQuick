@@ -13,10 +13,13 @@ export function ProjectColumn({ slug }: { slug: string }) {
   const persistBody = useBoardStore((s) => s.persistBody);
   const setColor = useBoardStore((s) => s.setColor);
   const rename = useBoardStore((s) => s.rename);
+  const deleteProject = useBoardStore((s) => s.deleteProject);
   const { onChange } = useDebouncedSave(() => persistBody(slug));
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   if (!project) return null;
 
@@ -27,6 +30,11 @@ export function ProjectColumn({ slug }: { slug: string }) {
     setEditingTitle(false);
     const next = draftTitle.trim();
     if (next && next !== title) void rename(slug, next);
+  }
+
+  function closeMenu() {
+    setMenuOpen(false);
+    setConfirming(false);
   }
 
   return (
@@ -71,6 +79,63 @@ export function ProjectColumn({ slug }: { slug: string }) {
             {title}
           </h2>
         )}
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            aria-label={`Acciones de ${title}`}
+            onClick={() => {
+              setConfirming(false);
+              setMenuOpen((open) => !open);
+            }}
+            className="flex h-6 w-6 items-center justify-center rounded-md text-[16px] leading-none text-muted hover:bg-black/5"
+          >
+            ⋯
+          </button>
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={closeMenu} aria-hidden="true" />
+              <div className="absolute right-0 top-[30px] z-50 w-[224px] rounded-[10px] border border-line bg-surface p-1 text-left shadow-[0_8px_28px_rgba(20,24,33,0.16)]">
+                {!confirming ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirming(true)}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium text-[#E5484D] hover:bg-[#FDF0F0]"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                    </svg>
+                    Eliminar proyecto
+                  </button>
+                ) : (
+                  <div className="px-2 py-1.5">
+                    <p className="mb-2 text-[12.5px] text-body">
+                      ¿Eliminar “{title}”? Esta acción no se puede deshacer.
+                    </p>
+                    <div className="flex justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={closeMenu}
+                        className="rounded-md px-2.5 py-1 text-[12.5px] font-medium text-body hover:bg-hover"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          closeMenu();
+                          void deleteProject(slug);
+                        }}
+                        className="rounded-md bg-[#E5484D] px-2.5 py-1 text-[12.5px] font-semibold text-white hover:bg-[#D33A3F]"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </header>
       <div className="flex-1 rounded-b-[10px] bg-surface">
         <MarkdownEditor

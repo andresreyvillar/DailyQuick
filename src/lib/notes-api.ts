@@ -57,6 +57,11 @@ export async function createProject(
   return noteSummarySchema.parse(await invoke("create_project", { key, title, color }));
 }
 
+/** Delete a project's note for `key`/`slug`. Rejects with `NotFound` if it does not exist. */
+export function deleteNote(key: string, slug: string): Promise<void> {
+  return invoke<void>("delete_note", { key, slug });
+}
+
 /** A single search result, mirrors the Rust `SearchHit`. */
 export const searchHitSchema = z.object({
   day_key: z.string(),

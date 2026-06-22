@@ -47,6 +47,13 @@ describe("CalendarEvents", () => {
     expect(await screen.findByText("Standup")).toBeInTheDocument();
   });
 
+  it("shows the event time and title in the chip", async () => {
+    mockListEvents.mockResolvedValue([standup]);
+    render(<CalendarEvents />);
+    expect(await screen.findByText("09:00")).toBeInTheDocument();
+    expect(screen.getByText("Standup")).toBeInTheDocument();
+  });
+
   it("shows an empty state when there are no events", async () => {
     mockListEvents.mockResolvedValue([]);
     render(<CalendarEvents />);

@@ -5,6 +5,7 @@ pub mod date;
 pub mod error;
 pub mod frontmatter;
 pub mod path;
+pub mod search;
 pub mod slug;
 pub mod store;
 

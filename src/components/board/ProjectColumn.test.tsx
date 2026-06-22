@@ -55,14 +55,15 @@ describe("ProjectColumn", () => {
     });
   });
 
-  it("changing the color control persists the new color", () => {
+  it("recoloring via the accent palette persists the new color", () => {
     render(<ProjectColumn slug="oakmond" />);
-    fireEvent.change(screen.getByLabelText("Color de Oakmond"), { target: { value: "#3e63dd" } });
+    fireEvent.click(screen.getByLabelText("Color de Oakmond"));
+    fireEvent.click(screen.getByLabelText("Teal"));
     expect(mockWriteNote).toHaveBeenCalledWith(
       "2026-06-21",
       "oakmond",
       expect.objectContaining({
-        frontmatter: expect.objectContaining({ color: "#3e63dd", title: "Oakmond" }),
+        frontmatter: expect.objectContaining({ color: "#2F9AA8", title: "Oakmond" }),
       }),
     );
   });

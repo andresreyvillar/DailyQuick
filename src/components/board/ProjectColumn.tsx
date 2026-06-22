@@ -4,6 +4,7 @@ import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
 import { useDebouncedSave } from "../../features/day/useDebouncedSave";
 import { MarkdownEditor } from "../editor/MarkdownEditor";
+import { ColorPicker } from "../ui/ColorPicker";
 
 /** A single project's pane: accent-tinted header (editable title + color dot) + the Markdown editor. */
 export function ProjectColumn({ slug }: { slug: string }) {
@@ -51,12 +52,10 @@ export function ProjectColumn({ slug }: { slug: string }) {
         }}
         data-accent-color={accent}
       >
-        <input
-          type="color"
-          aria-label={`Color de ${title}`}
+        <ColorPicker
           value={project.frontmatter.color ?? "#9AA0A9"}
-          onChange={(e) => void setColor(slug, e.target.value)}
-          className="h-3.5 w-3.5 shrink-0 cursor-pointer rounded-full border-0 bg-transparent p-0"
+          onChange={(hex) => void setColor(slug, hex)}
+          label={`Color de ${title}`}
         />
         {editingTitle ? (
           <input

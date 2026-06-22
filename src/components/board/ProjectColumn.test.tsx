@@ -117,4 +117,20 @@ describe("ProjectColumn", () => {
     fireEvent.click(screen.getByRole("button", { name: "Eliminar" }));
     expect(deleteProject).toHaveBeenCalledWith("oakmond");
   });
+
+  it("shows the template prompt when the note is empty and applies it on click", () => {
+    const applyTemplate = vi.fn();
+    useBoardStore.setState({
+      projects: [{ slug: "oakmond", frontmatter: { ...FRONTMATTER }, body: "" }],
+      applyTemplate,
+    });
+    render(<ProjectColumn slug="oakmond" />);
+    fireEvent.click(screen.getByLabelText("Plantilla básica"));
+    expect(applyTemplate).toHaveBeenCalledWith("oakmond", expect.stringContaining("## Tareas"));
+  });
+
+  it("does not show the template prompt when the note has content", () => {
+    render(<ProjectColumn slug="oakmond" />);
+    expect(screen.queryByLabelText("Plantilla básica")).not.toBeInTheDocument();
+  });
 });

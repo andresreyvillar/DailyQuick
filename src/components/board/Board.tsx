@@ -1,5 +1,6 @@
 import { parseDateKey } from "../../lib/date-key";
 import { useBoardStore } from "../../state/board-store";
+import { CalendarEvents } from "../calendar/CalendarEvents";
 import { AddProjectButton } from "./AddProjectButton";
 import { DayHeader } from "./DayHeader";
 import { DayNavigator } from "./DayNavigator";
@@ -29,6 +30,10 @@ export function Board() {
           <AddProjectButton />
           <OrientationToggle />
         </div>
+      </div>
+
+      <div className="border-b border-gray-100 px-4 py-2">
+        <CalendarEvents />
       </div>
 
       {projects.length === 0 ? (

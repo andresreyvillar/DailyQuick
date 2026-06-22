@@ -14,6 +14,8 @@ pub enum StorageError {
     AlreadyExists(String),
     #[error("frontmatter parse error: {0}")]
     Parse(String),
+    #[error("calendar error: {0}")]
+    Calendar(String),
     #[error("io error: {0}")]
     Io(String),
 }

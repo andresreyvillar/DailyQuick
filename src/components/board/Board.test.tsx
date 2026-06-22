@@ -8,7 +8,11 @@ vi.mock("../../lib/notes-api", () => ({
   ensureDay: vi.fn(),
   createProject: vi.fn(),
   search: vi.fn(),
+  listEvents: vi.fn(),
 }));
+
+// Stub the calendar strip (its own tests cover it; avoids a native/async fetch in board tests).
+vi.mock("../calendar/CalendarEvents", () => ({ CalendarEvents: () => null }));
 
 import { listDay, readNote } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";

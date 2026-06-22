@@ -229,4 +229,75 @@ describe("board store", () => {
     expect(projects.map((p) => p.slug)).toEqual(["personal"]);
     expect(revisions).toEqual({ personal: 1 });
   });
+
+  it("importPreviousDay recreates the previous day's projects then reloads", async () => {
+    mockListDay.mockResolvedValueOnce([]); // current day empty
+    mockReadNote.mockResolvedValue({ frontmatter: { title: "x", color: null, order: 0 }, body: "" });
+    await useBoardStore.getState().loadDay("2026-06-22");
+
+    mockListDay.mockResolvedValueOnce([
+      { slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 },
+      { slug: "personal", title: "Personal", color: null, order: 2 },
+    ]);
+    mockCreateProject.mockResolvedValue({ slug: "x", title: "x", color: null, order: 0 });
+    mockListDay.mockResolvedValueOnce([
+      { slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 0 },
+      { slug: "personal", title: "Personal", color: null, order: 1 },
+    ]);
+
+    await useBoardStore.getState().importPreviousDay();
+
+    expect(mockListDay).toHaveBeenCalledWith("2026-06-21");
+    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Oakmond", "#E54D2E");
+    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Personal", "#9aa0a9");
+    expect(useBoardStore.getState().projects.map((p) => p.slug)).toEqual(["oakmond", "personal"]);
+  });
+
+  it("importPreviousDay skips a project whose slug already exists today", async () => {
+    mockListDay.mockResolvedValueOnce([
+      { slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 },
+    ]);
+    mockReadNote.mockResolvedValue({
+      frontmatter: { title: "Oakmond", color: "#E54D2E", order: 1 },
+      body: "keep",
+    });
+    await useBoardStore.getState().loadDay("2026-06-22");
+    mockCreateProject.mockClear();
+
+    mockListDay.mockResolvedValueOnce([
+      { slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 },
+      { slug: "personal", title: "Personal", color: "#3E63DD", order: 2 },
+    ]);
+    mockCreateProject.mockResolvedValue({ slug: "personal", title: "Personal", color: "#3E63DD", order: 1 });
+    mockListDay.mockResolvedValueOnce([
+      { slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 0 },
+      { slug: "personal", title: "Personal", color: "#3E63DD", order: 1 },
+    ]);
+
+    await useBoardStore.getState().importPreviousDay();
+
+    expect(mockCreateProject).toHaveBeenCalledTimes(1);
+    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Personal", "#3E63DD");
+  });
+
+  it("importPreviousDay continues when one project fails to create", async () => {
+    mockListDay.mockResolvedValueOnce([]);
+    mockReadNote.mockResolvedValue({ frontmatter: { title: "x", color: null, order: 0 }, body: "" });
+    await useBoardStore.getState().loadDay("2026-06-22");
+    mockCreateProject.mockClear();
+
+    mockListDay.mockResolvedValueOnce([
+      { slug: "a", title: "A", color: "#111111", order: 1 },
+      { slug: "b", title: "B", color: "#222222", order: 2 },
+    ]);
+    mockCreateProject
+      .mockRejectedValueOnce({ kind: "AlreadyExists" })
+      .mockResolvedValueOnce({ slug: "b", title: "B", color: "#222222", order: 0 });
+    mockListDay.mockResolvedValueOnce([{ slug: "b", title: "B", color: "#222222", order: 0 }]);
+
+    await useBoardStore.getState().importPreviousDay();
+
+    expect(mockCreateProject).toHaveBeenCalledTimes(2);
+    expect(useBoardStore.getState().projects.map((p) => p.slug)).toEqual(["b"]);
+  });
 });

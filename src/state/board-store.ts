@@ -41,6 +41,8 @@ type BoardState = {
   persistBody: (slug: string) => Promise<void>;
   createProject: (title: string, color: string) => Promise<void>;
   deleteProject: (slug: string) => Promise<void>;
+  /** Recreate the previous day's projects (title + color, empty body) for the current day. */
+  importPreviousDay: () => Promise<void>;
   setColor: (slug: string, color: string) => Promise<void>;
   rename: (slug: string, title: string) => Promise<void>;
   goToDay: (key: string) => Promise<void>;
@@ -98,6 +100,22 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     const { dayKey } = get();
     if (!dayKey) return;
     await apiCreateProject(dayKey, title, color);
+    await get().loadDay(dayKey);
+  },
+
+  async importPreviousDay() {
+    const { dayKey, projects } = get();
+    if (!dayKey) return;
+    const previous = await listDay(addDays(dayKey, -1));
+    const existing = new Set(projects.map((p) => p.slug));
+    for (const summary of previous) {
+      if (existing.has(summary.slug)) continue;
+      try {
+        await apiCreateProject(dayKey, summary.title, summary.color ?? "#9aa0a9");
+      } catch {
+        // Skip duplicates / invalid titles — carry-over never overwrites an existing note.
+      }
+    }
     await get().loadDay(dayKey);
   },
 

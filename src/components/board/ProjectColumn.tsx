@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { BASIC_TEMPLATE } from "../../lib/note-template";
 import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
 import { useDebouncedSave } from "../../features/day/useDebouncedSave";
@@ -16,6 +17,7 @@ export function ProjectColumn({ slug }: { slug: string }) {
   const setColor = useBoardStore((s) => s.setColor);
   const rename = useBoardStore((s) => s.rename);
   const deleteProject = useBoardStore((s) => s.deleteProject);
+  const applyTemplate = useBoardStore((s) => s.applyTemplate);
   const theme = useThemeStore((s) => s.theme);
   const { onChange } = useDebouncedSave(() => persistBody(slug));
 
@@ -28,6 +30,7 @@ export function ProjectColumn({ slug }: { slug: string }) {
 
   const title = project.frontmatter.title;
   const accent = project.frontmatter.color ?? "#9AA0A9";
+  const isEmpty = project.body.trim() === "";
 
   function commitTitle() {
     setEditingTitle(false);
@@ -151,6 +154,31 @@ export function ProjectColumn({ slug }: { slug: string }) {
         )}
       </header>
       <div className="flex-1 rounded-b-[var(--radius-col)] bg-surface">
+        {isEmpty && (
+          <div className="px-4 pt-3.5">
+            <p className="mb-2.5 text-[13px] text-faint">Proyecto en blanco. Empieza con una plantilla:</p>
+            <button
+              type="button"
+              aria-label="Plantilla básica"
+              onClick={() => void applyTemplate(slug, BASIC_TEMPLATE)}
+              className="flex w-full items-center gap-3 rounded-[10px] border border-dashed border-line bg-subtle px-3 py-2.5 text-left hover:border-muted"
+            >
+              <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg bg-hover text-muted">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m3 17 2 2 4-4" />
+                  <path d="m3 7 2 2 4-4" />
+                  <path d="M13 6h8" />
+                  <path d="M13 12h8" />
+                  <path d="M13 18h8" />
+                </svg>
+              </span>
+              <span className="flex flex-col gap-px">
+                <span className="text-[13px] font-semibold text-strong">Plantilla básica</span>
+                <span className="text-[11px] text-faint">Checklist · separador · notas</span>
+              </span>
+            </button>
+          </div>
+        )}
         <MarkdownEditor
           key={`${dayKey}:${slug}:${revision}`}
           value={project.body}

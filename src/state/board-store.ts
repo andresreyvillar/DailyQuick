@@ -53,6 +53,8 @@ type BoardState = {
   revisions: Record<string, number>;
   createProjectFromEvent: (event: CalendarEvent) => Promise<void>;
   addEventToProject: (slug: string, event: CalendarEvent) => Promise<void>;
+  /** Seed an (empty) project note with template Markdown; reloads the editor via the revision bump. */
+  applyTemplate: (slug: string, markdown: string) => Promise<void>;
 };
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -193,6 +195,18 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     await writeNote(dayKey, slug, { frontmatter: project.frontmatter, body });
     set({
       projects: get().projects.map((p) => (p.slug === slug ? { ...p, body } : p)),
+      revisions: { ...get().revisions, [slug]: (get().revisions[slug] ?? 0) + 1 },
+    });
+  },
+
+  async applyTemplate(slug, markdown) {
+    const { dayKey, projects } = get();
+    if (!dayKey) return;
+    const project = projects.find((p) => p.slug === slug);
+    if (!project) return;
+    await writeNote(dayKey, slug, { frontmatter: project.frontmatter, body: markdown });
+    set({
+      projects: get().projects.map((p) => (p.slug === slug ? { ...p, body: markdown } : p)),
       revisions: { ...get().revisions, [slug]: (get().revisions[slug] ?? 0) + 1 },
     });
   },

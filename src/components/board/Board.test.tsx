@@ -7,10 +7,14 @@ vi.mock("../../lib/notes-api", () => ({
   writeNote: vi.fn(),
   ensureDay: vi.fn(),
   createProject: vi.fn(),
+  search: vi.fn(),
+  listEvents: vi.fn(),
 }));
 
 // Stub the Milkdown editor (ProseMirror can't render in jsdom).
 vi.mock("../editor/MarkdownEditor", () => ({ MarkdownEditor: () => null }));
+// Stub the calendar strip (its own tests cover it; avoids a native/async fetch in board tests).
+vi.mock("../calendar/CalendarEvents", () => ({ CalendarEvents: () => null }));
 
 import { listDay, readNote } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";
@@ -60,5 +64,12 @@ describe("Board", () => {
     render(<Board />);
     expect(screen.getByTestId("empty-state")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
+  });
+
+  it("header shows the selected day's date", async () => {
+    mockListDay.mockResolvedValue([]);
+    await useBoardStore.getState().loadDay("2026-06-20");
+    render(<Board />);
+    expect(screen.getByText(/20 de junio de 2026/)).toBeInTheDocument();
   });
 });

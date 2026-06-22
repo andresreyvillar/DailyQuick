@@ -8,12 +8,14 @@ vi.mock("../lib/notes-api", () => ({
   createProject: vi.fn(),
 }));
 
-import { createProject, listDay, readNote, writeNote } from "../lib/notes-api";
+import { createProject, ensureDay, listDay, readNote, writeNote } from "../lib/notes-api";
+import { todayKey } from "../lib/date-key";
 import { loadOrientation, useBoardStore } from "./board-store";
 
 const mockListDay = vi.mocked(listDay);
 const mockReadNote = vi.mocked(readNote);
 const mockWriteNote = vi.mocked(writeNote);
+const mockEnsureDay = vi.mocked(ensureDay);
 const mockCreateProject = vi.mocked(createProject);
 
 beforeEach(() => {
@@ -110,5 +112,47 @@ describe("board store", () => {
     });
     expect(useBoardStore.getState().projects[0].slug).toBe("oakmond");
     expect(useBoardStore.getState().projects[0].frontmatter.title).toBe("Oakmond HQ");
+  });
+
+  it("goToPreviousDay loads the previous day", async () => {
+    mockListDay.mockResolvedValue([]);
+    await useBoardStore.getState().loadDay("2026-06-21");
+    mockListDay.mockClear();
+
+    await useBoardStore.getState().goToPreviousDay();
+
+    expect(mockListDay).toHaveBeenCalledWith("2026-06-20");
+    expect(useBoardStore.getState().dayKey).toBe("2026-06-20");
+  });
+
+  it("goToNextDay loads the next day", async () => {
+    mockListDay.mockResolvedValue([]);
+    await useBoardStore.getState().loadDay("2026-06-20");
+    mockListDay.mockClear();
+
+    await useBoardStore.getState().goToNextDay();
+
+    expect(mockListDay).toHaveBeenCalledWith("2026-06-21");
+    expect(useBoardStore.getState().dayKey).toBe("2026-06-21");
+  });
+
+  it("goToToday loads today's key", async () => {
+    mockListDay.mockResolvedValue([]);
+    await useBoardStore.getState().loadDay("2026-06-10");
+    mockListDay.mockClear();
+
+    await useBoardStore.getState().goToToday();
+
+    expect(mockListDay).toHaveBeenCalledWith(todayKey());
+  });
+
+  it("navigation does not create a folder (no ensure_day / write_note)", async () => {
+    mockListDay.mockResolvedValue([]);
+    await useBoardStore.getState().loadDay("2026-06-21");
+
+    await useBoardStore.getState().goToPreviousDay();
+
+    expect(mockEnsureDay).not.toHaveBeenCalled();
+    expect(mockWriteNote).not.toHaveBeenCalled();
   });
 });

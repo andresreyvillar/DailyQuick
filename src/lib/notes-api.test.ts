@@ -3,7 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
 import { invoke } from "@tauri-apps/api/core";
-import { createProject, noteSchema } from "./notes-api";
+import {
+  calendarEventSchema,
+  createProject,
+  noteSchema,
+  search,
+  searchHitSchema,
+} from "./notes-api";
 
 const mockInvoke = vi.mocked(invoke);
 
@@ -48,5 +54,45 @@ describe("createProject", () => {
   it("rejects an empty title without calling the backend", async () => {
     await expect(createProject("2026-06-21", "   ", "#000000")).rejects.toThrow();
     expect(mockInvoke).not.toHaveBeenCalled();
+  });
+});
+
+describe("searchHitSchema", () => {
+  it("accepts a valid hit and rejects a malformed one", () => {
+    expect(
+      searchHitSchema.safeParse({ day_key: "2026-06-20", slug: "a", title: "A", snippet: "" }).success,
+    ).toBe(true);
+    expect(searchHitSchema.safeParse({ day_key: 1, slug: "a" }).success).toBe(false);
+  });
+});
+
+describe("search", () => {
+  it("invokes search_notes and returns parsed hits", async () => {
+    mockInvoke.mockResolvedValue([
+      { day_key: "2026-06-20", slug: "oakmond", title: "Oakmond", snippet: "x" },
+    ]);
+    const hits = await search("oak");
+    expect(mockInvoke).toHaveBeenCalledWith("search_notes", { query: "oak" });
+    expect(hits[0].slug).toBe("oakmond");
+  });
+
+  it("returns empty for a blank query without calling the backend", async () => {
+    expect(await search("   ")).toEqual([]);
+    expect(mockInvoke).not.toHaveBeenCalled();
+  });
+});
+
+describe("calendarEventSchema", () => {
+  it("accepts a valid event and rejects a malformed one", () => {
+    expect(
+      calendarEventSchema.safeParse({
+        title: "Standup",
+        start: "2026-06-22T09:00:00",
+        end: "2026-06-22T09:15:00",
+        all_day: false,
+        calendar: "Work",
+      }).success,
+    ).toBe(true);
+    expect(calendarEventSchema.safeParse({ title: "x", all_day: "no" }).success).toBe(false);
   });
 });

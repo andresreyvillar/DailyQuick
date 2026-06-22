@@ -7,6 +7,7 @@ import {
   writeNote,
   type Frontmatter,
 } from "../lib/notes-api";
+import { addDays, todayKey } from "../lib/date-key";
 
 export type Orientation = "vertical" | "horizontal";
 
@@ -36,6 +37,10 @@ type BoardState = {
   createProject: (title: string, color: string) => Promise<void>;
   setColor: (slug: string, color: string) => Promise<void>;
   rename: (slug: string, title: string) => Promise<void>;
+  goToDay: (key: string) => Promise<void>;
+  goToPreviousDay: () => Promise<void>;
+  goToNextDay: () => Promise<void>;
+  goToToday: () => Promise<void>;
 };
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -103,5 +108,25 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     const frontmatter = { ...project.frontmatter, title };
     await writeNote(dayKey, slug, { frontmatter, body: project.body });
     set({ projects: projects.map((p) => (p.slug === slug ? { ...p, frontmatter } : p)) });
+  },
+
+  async goToDay(key) {
+    await get().loadDay(key);
+  },
+
+  async goToPreviousDay() {
+    const { dayKey } = get();
+    if (!dayKey) return;
+    await get().loadDay(addDays(dayKey, -1));
+  },
+
+  async goToNextDay() {
+    const { dayKey } = get();
+    if (!dayKey) return;
+    await get().loadDay(addDays(dayKey, 1));
+  },
+
+  async goToToday() {
+    await get().loadDay(todayKey());
   },
 }));

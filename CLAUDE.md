@@ -40,8 +40,8 @@ coding agents** in their corresponding projects.
 
 - **Shell**: Tauri 2 (Rust host + system `WKWebView`). Native `.app`, signable, ~10 MB, no bundled Chromium.
 - **Frontend**: React 19 + Vite + TypeScript + Tailwind CSS.
-- **Editor**: BlockNote (Notion-style, block-based, on ProseMirror/TipTap) with native Markdown
-  import/export. Code blocks rendered via CodeMirror 6 for real syntax highlighting.
+- **Editor**: Milkdown (Crepe) — Notion-style WYSIWYG built on a real Markdown AST (remark), so the
+  on-disk Markdown round-trips faithfully (GFM task lists/checkboxes). Code blocks use CodeMirror.
 - **Layout**: `react-resizable-panels` for the vertical/horizontal split board.
 - **Client state**: Zustand (lightweight; revisit only if it proves insufficient).
 - **Storage**: `.md` files on disk are the source of truth. Optional **SQLite** index
@@ -59,7 +59,7 @@ dailyQuick/
 ├── src/                       # React frontend (renderer / WebView)
 │   ├── app/                   # App shell, providers, top-level layout
 │   ├── components/
-│   │   ├── editor/            # BlockNote wrapper + custom code block (CodeMirror 6)
+│   │   ├── editor/            # Milkdown (Crepe) wrapper — Markdown in/out, CodeMirror code blocks
 │   │   ├── board/            # Daily board: columns/rows, split toggle, project tabs, "+" add
 │   │   ├── calendar/          # Day header (date) + read-only EventKit events panel
 │   │   └── ui/                # Primitives: buttons, color picker, menus
@@ -162,8 +162,8 @@ created: 2026-06-21
   mode. Respect the system appearance (macOS light/dark) by default.
 - **State visibility**: every interactive surface has clear hover / focus / disabled / loading /
   empty states. A brand-new day shows an inviting empty board, not a blank void.
-- **Editor**: slash menu, checkboxes, callouts, headings, and a dedicated code block (CodeMirror 6)
-  with language selection and copy button.
+- **Editor**: Milkdown Crepe — slash menu, checkboxes, headings, quotes, and a CodeMirror-backed
+  code block with language selection.
 - **Accessibility**: full keyboard navigation; visible focus rings; respect reduced-motion.
 
 ---
@@ -292,7 +292,7 @@ read the change's spec scenarios and confirm each maps to a passing test (manual
 1. `day-folder-storage` — on-disk contract: day folder, read/write/list `.md`, frontmatter ← **next**
 2. `daily-board-layout` — blank dated page + per-project columns + V/H toggle
 3. `project-management` — `+` button, title + color + order
-4. `rich-markdown-editor` — BlockNote ↔ Markdown round-trip + CodeMirror code block
+4. `rich-markdown-editor` — Milkdown (Crepe) WYSIWYG over Markdown + CodeMirror code blocks
 5. `history-navigation` — browse previous days
 6. `calendar-readonly` — EventKit events in the day header
 7. `search-index` *(optional)* — SQLite cache

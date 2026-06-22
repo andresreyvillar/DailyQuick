@@ -11,6 +11,8 @@ vi.mock("../../lib/notes-api", () => ({
   listEvents: vi.fn(),
 }));
 
+// Stub the Milkdown editor (ProseMirror can't render in jsdom).
+vi.mock("../editor/MarkdownEditor", () => ({ MarkdownEditor: () => null }));
 // Stub the calendar strip (its own tests cover it; avoids a native/async fetch in board tests).
 vi.mock("../calendar/CalendarEvents", () => ({ CalendarEvents: () => null }));
 

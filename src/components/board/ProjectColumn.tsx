@@ -2,15 +2,17 @@ import { useState } from "react";
 
 import { useBoardStore } from "../../state/board-store";
 import { useDebouncedSave } from "../../features/day/useDebouncedSave";
+import { MarkdownEditor } from "../editor/MarkdownEditor";
 
 /** A single project's pane: title + color accent (both editable) + inline placeholder editor. */
 export function ProjectColumn({ slug }: { slug: string }) {
   const project = useBoardStore((s) => s.projects.find((p) => p.slug === slug));
+  const dayKey = useBoardStore((s) => s.dayKey);
   const setBody = useBoardStore((s) => s.setBody);
   const persistBody = useBoardStore((s) => s.persistBody);
   const setColor = useBoardStore((s) => s.setColor);
   const rename = useBoardStore((s) => s.rename);
-  const { onChange, flush } = useDebouncedSave(() => persistBody(slug));
+  const { onChange } = useDebouncedSave(() => persistBody(slug));
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
@@ -64,17 +66,16 @@ export function ProjectColumn({ slug }: { slug: string }) {
           className="ml-auto h-5 w-6 cursor-pointer border-0 bg-transparent p-0"
         />
       </header>
-      <textarea
-        aria-label={`Notas de ${title}`}
-        value={project.body}
-        onChange={(e) => {
-          setBody(slug, e.target.value);
-          onChange();
-        }}
-        onBlur={flush}
-        className="flex-1 resize-none bg-transparent p-3 font-mono text-sm outline-none"
-        placeholder="Escribe en Markdown…"
-      />
+      <div className="flex-1">
+        <MarkdownEditor
+          key={`${dayKey}:${slug}`}
+          value={project.body}
+          onChange={(markdown) => {
+            setBody(slug, markdown);
+            onChange();
+          }}
+        />
+      </div>
     </section>
   );
 }

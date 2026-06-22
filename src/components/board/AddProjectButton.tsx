@@ -2,9 +2,9 @@ import { useState, type FormEvent } from "react";
 
 import { useBoardStore } from "../../state/board-store";
 
-const DEFAULT_COLOR = "#3E63DD";
+const DEFAULT_COLOR = "#4F7FD6";
 
-/** "+" affordance that opens an inline form to create a project (title + color). */
+/** "+ Nuevo proyecto" pill that opens an inline form to create a project (title + color). */
 export function AddProjectButton() {
   const createProject = useBoardStore((s) => s.createProject);
   const [open, setOpen] = useState(false);
@@ -31,9 +31,9 @@ export function AddProjectButton() {
         type="button"
         aria-label="Nuevo proyecto"
         onClick={() => setOpen(true)}
-        className="rounded border border-gray-300 px-3 py-1 text-sm hover:bg-gray-100"
+        className="flex h-[30px] items-center gap-1.5 rounded-lg bg-ink px-[13px] text-[13px] font-semibold text-white hover:opacity-90"
       >
-        +
+        <span className="text-[15px] leading-none">+</span> Nuevo proyecto
       </button>
     );
   }
@@ -46,20 +46,23 @@ export function AddProjectButton() {
         autoFocus
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Proyecto"
-        className="rounded border border-gray-300 px-2 py-1 text-sm"
+        className="h-[30px] rounded-lg border border-line-field bg-field px-2.5 text-[13px] text-strong placeholder:text-faint focus:border-line focus:bg-surface focus:outline-none"
       />
       <input
         type="color"
         aria-label="Color del proyecto"
         value={color}
         onChange={(e) => setColor(e.target.value)}
-        className="h-7 w-8 cursor-pointer border-0 bg-transparent p-0"
+        className="h-7 w-8 cursor-pointer rounded-md border border-line bg-transparent p-0.5"
       />
-      <button type="submit" className="rounded border border-gray-300 px-3 py-1 text-sm">
+      <button
+        type="submit"
+        className="h-[30px] rounded-lg bg-ink px-3 text-[13px] font-semibold text-white hover:opacity-90"
+      >
         Crear
       </button>
       {error && (
-        <span role="alert" className="text-sm text-red-600">
+        <span role="alert" className="text-[12px] text-[#CF6470]">
           {error}
         </span>
       )}

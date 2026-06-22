@@ -1,1 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
+
+/* DailyQuick design tokens (light) — from the design handoff. */
+@theme {
+  --color-surface: #ffffff;
+  --color-sunken: #f4f5f7;
+  --color-subtle: #fafbfc;
+  --color-field: #f4f5f7;
+  --color-line: #e6e8ec;
+  --color-line-soft: #ecedf0;
+  --color-line-field: #ebedf0;
+  --color-ink: #23272e;
+  --color-strong: #23272e;
+  --color-body: #3f444c;
+  --color-muted: #5b616b;
+  --color-faint: #9aa0a9;
+  --color-disabled: #aab0b9;
+  --color-hover: #f1f3f5;
+
+  --font-sans: "Public Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-body);
+  background: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+}

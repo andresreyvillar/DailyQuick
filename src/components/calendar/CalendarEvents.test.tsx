@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../lib/notes-api", () => ({
@@ -57,5 +57,33 @@ describe("CalendarEvents", () => {
     await waitFor(() =>
       expect(screen.getByText(/Concede acceso al Calendario/)).toBeInTheDocument(),
     );
+  });
+
+  it("creates a project from an event", async () => {
+    const createProjectFromEvent = vi.fn().mockResolvedValue(undefined);
+    useBoardStore.setState({ createProjectFromEvent });
+    mockListEvents.mockResolvedValue([
+      { title: "Standup", start: "2026-06-22T09:00:00", end: "2026-06-22T09:15:00", all_day: false, calendar: "Work", calendar_id: "work" },
+    ]);
+    render(<CalendarEvents />);
+
+    fireEvent.click(await screen.findByLabelText("Crear proyecto desde Standup"));
+    expect(createProjectFromEvent).toHaveBeenCalledWith(expect.objectContaining({ title: "Standup" }));
+  });
+
+  it("adds an event to a chosen project", async () => {
+    const addEventToProject = vi.fn().mockResolvedValue(undefined);
+    useBoardStore.setState({
+      addEventToProject,
+      projects: [{ slug: "oakmond", frontmatter: { title: "Oakmond", color: "#E54D2E", order: 1 }, body: "" }],
+    });
+    mockListEvents.mockResolvedValue([
+      { title: "Standup", start: "2026-06-22T09:00:00", end: "2026-06-22T09:15:00", all_day: false, calendar: "Work", calendar_id: "work" },
+    ]);
+    render(<CalendarEvents />);
+
+    const select = await screen.findByLabelText("Añadir Standup a un proyecto");
+    fireEvent.change(select, { target: { value: "oakmond" } });
+    expect(addEventToProject).toHaveBeenCalledWith("oakmond", expect.objectContaining({ title: "Standup" }));
   });
 });

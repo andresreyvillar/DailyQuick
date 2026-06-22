@@ -8,6 +8,7 @@ import { MarkdownEditor } from "../editor/MarkdownEditor";
 export function ProjectColumn({ slug }: { slug: string }) {
   const project = useBoardStore((s) => s.projects.find((p) => p.slug === slug));
   const dayKey = useBoardStore((s) => s.dayKey);
+  const revision = useBoardStore((s) => s.revisions[slug] ?? 0);
   const setBody = useBoardStore((s) => s.setBody);
   const persistBody = useBoardStore((s) => s.persistBody);
   const setColor = useBoardStore((s) => s.setColor);
@@ -68,7 +69,7 @@ export function ProjectColumn({ slug }: { slug: string }) {
       </header>
       <div className="flex-1">
         <MarkdownEditor
-          key={`${dayKey}:${slug}`}
+          key={`${dayKey}:${slug}:${revision}`}
           value={project.body}
           onChange={(markdown) => {
             setBody(slug, markdown);

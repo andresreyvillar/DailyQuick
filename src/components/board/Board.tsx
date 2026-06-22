@@ -4,6 +4,7 @@ import { useThemeStore } from "../../state/theme-store";
 import { CalendarEvents } from "../calendar/CalendarEvents";
 import { CalendarFilter } from "../calendar/CalendarFilter";
 import { AddProjectButton } from "./AddProjectButton";
+import { CarryOverButton } from "./CarryOverButton";
 import { DayHeader } from "./DayHeader";
 import { DayNavigator } from "./DayNavigator";
 import { OrientationToggle } from "./OrientationToggle";
@@ -30,6 +31,7 @@ export function Board() {
         </div>
         <div className="flex items-center gap-2.5">
           <SearchPanel />
+          <CarryOverButton />
           <AddProjectButton />
           <OrientationToggle />
           <ThemeSelector />

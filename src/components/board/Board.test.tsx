@@ -58,4 +58,11 @@ describe("Board", () => {
     expect(screen.getByTestId("empty-state")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
   });
+
+  it("header shows the selected day's date", async () => {
+    mockListDay.mockResolvedValue([]);
+    await useBoardStore.getState().loadDay("2026-06-20");
+    render(<Board />);
+    expect(screen.getByText(/20 de junio de 2026/)).toBeInTheDocument();
+  });
 });

@@ -1,6 +1,8 @@
+import { parseDateKey } from "../../lib/date-key";
 import { useBoardStore } from "../../state/board-store";
 import { AddProjectButton } from "./AddProjectButton";
 import { DayHeader } from "./DayHeader";
+import { DayNavigator } from "./DayNavigator";
 import { OrientationToggle } from "./OrientationToggle";
 import { ProjectColumn } from "./ProjectColumn";
 
@@ -8,6 +10,7 @@ import { ProjectColumn } from "./ProjectColumn";
 export function Board() {
   const projects = useBoardStore((s) => s.projects);
   const orientation = useBoardStore((s) => s.orientation);
+  const dayKey = useBoardStore((s) => s.dayKey);
 
   // "vertical" split = side-by-side columns; "horizontal" split = stacked rows.
   const layout =
@@ -16,7 +19,10 @@ export function Board() {
   return (
     <main className="flex h-screen flex-col">
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-        <DayHeader />
+        <div className="flex items-center gap-3">
+          <DayHeader date={dayKey ? parseDateKey(dayKey) : new Date()} />
+          <DayNavigator />
+        </div>
         <div className="flex items-center gap-2">
           <AddProjectButton />
           <OrientationToggle />

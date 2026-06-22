@@ -1,7 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap");
 @import "tailwindcss";
 
-/* DailyQuick design tokens (light) — from the design handoff. */
+/* DailyQuick design tokens — "Nítido" light theme (default), from the design handoff. */
 @theme {
   --color-surface: #ffffff;
   --color-sunken: #f4f5f7;
@@ -20,6 +20,126 @@
 
   --font-sans: "Public Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Non-color theme variables (Nítido defaults). Per-theme blocks below override these + the color tokens. */
+:root {
+  --font-display: var(--font-sans);
+  --date-size: 18px;
+  --date-weight: 600;
+  --col-title-size: 14.5px;
+  --section-head-size: 13px;
+  --radius-col: 10px;
+  --col-shadow: 0 1px 2px rgba(20, 24, 33, 0.04);
+  --band-border-width: 1px;
+  --band-border-style: solid;
+  --board-image: none;
+}
+
+/* Bullet Journal — warm cream paper, handwritten display font, dotted board, dashed bands. */
+html[data-theme="bujo"] {
+  --color-surface: #fffdf8;
+  --color-sunken: #f3ebd8;
+  --color-subtle: #fcf7ea;
+  --color-field: #f7f0de;
+  --color-line: #e7dbc0;
+  --color-line-soft: #eadfc6;
+  --color-line-field: #e7dbc0;
+  --color-ink: #3c3526;
+  --color-strong: #3c3526;
+  --color-body: #5a5142;
+  --color-muted: #8a7e68;
+  --color-faint: #b3a88e;
+  --color-disabled: #a89c80;
+  --color-hover: #f1e9d6;
+
+  --font-display: "Caveat", cursive;
+  --date-size: 29px;
+  --date-weight: 700;
+  --col-title-size: 21px;
+  --section-head-size: 18px;
+  --radius-col: 14px;
+  --col-shadow: 0 2px 0 rgba(120, 100, 60, 0.06), 0 3px 8px rgba(120, 100, 60, 0.1);
+  --band-border-width: 2px;
+  --band-border-style: dashed;
+  --board-image: radial-gradient(#d8cbac 1.4px, transparent 1.5px);
+}
+
+/* Cítrico — cool violet-tinted whites with an animated gradient strip. */
+html[data-theme="citrus"] {
+  --color-surface: #ffffff;
+  --color-sunken: #fbfafe;
+  --color-subtle: #fcfbfe;
+  --color-field: #f4f1fa;
+  --color-line: #ece7f2;
+  --color-line-soft: #eeecf4;
+  --color-line-field: #e9e4f1;
+  --color-ink: #221e2b;
+  --color-strong: #221e2b;
+  --color-body: #3d3848;
+  --color-muted: #5c5670;
+  --color-faint: #a39bb6;
+  --color-disabled: #9189a6;
+  --color-hover: #f3f0f9;
+
+  --font-display: var(--font-sans);
+  --date-size: 18px;
+  --date-weight: 700;
+  --col-title-size: 15px;
+  --section-head-size: 13px;
+  --radius-col: 12px;
+  --col-shadow: 0 2px 10px rgba(90, 70, 140, 0.08);
+  --band-border-width: 1px;
+  --band-border-style: solid;
+  --board-image: none;
+}
+
+/* Token-reading helpers so the chrome restyles from the theme vars without per-component branches. */
+.board-date {
+  font-family: var(--font-display);
+  font-size: var(--date-size);
+  font-weight: var(--date-weight);
+}
+.col-title {
+  font-family: var(--font-display);
+  font-size: var(--col-title-size);
+}
+.col-card {
+  border-radius: var(--radius-col);
+  box-shadow: var(--col-shadow);
+}
+.col-band {
+  border-bottom-width: var(--band-border-width);
+  border-bottom-style: var(--band-border-style);
+}
+.board-canvas {
+  background-image: var(--board-image);
+  background-size: 18px 18px;
+}
+.citrus-strip {
+  height: 3px;
+  flex: none;
+  background: linear-gradient(90deg, #4f7fd6, #2f9aa8, #3a9d6b, #c08a2e, #cf6470, #8a76d4, #4f7fd6);
+  background-size: 200% 100%;
+  animation: citrusSlide 6s linear infinite;
+}
+
+@keyframes floatY {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes citrusSlide {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
 }
 
 html,

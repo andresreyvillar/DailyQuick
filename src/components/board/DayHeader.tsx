@@ -9,7 +9,7 @@ export function DayHeader({ date = new Date() }: { date?: Date }) {
   const label = DATE_FMT.format(date);
   const capitalized = label.charAt(0).toUpperCase() + label.slice(1);
   return (
-    <h1 className="text-[18px] font-semibold tracking-[-0.01em] text-strong">
+    <h1 className="board-date leading-none tracking-[-0.01em] text-strong">
       {capitalized} <span className="font-medium text-disabled">· {date.getFullYear()}</span>
     </h1>
   );

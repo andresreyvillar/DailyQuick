@@ -1,5 +1,6 @@
 import { parseDateKey } from "../../lib/date-key";
 import { useBoardStore } from "../../state/board-store";
+import { useThemeStore } from "../../state/theme-store";
 import { CalendarEvents } from "../calendar/CalendarEvents";
 import { CalendarFilter } from "../calendar/CalendarFilter";
 import { AddProjectButton } from "./AddProjectButton";
@@ -8,12 +9,14 @@ import { DayNavigator } from "./DayNavigator";
 import { OrientationToggle } from "./OrientationToggle";
 import { ProjectColumn } from "./ProjectColumn";
 import { SearchPanel } from "./SearchPanel";
+import { ThemeSelector } from "./ThemeSelector";
 
 /** The current-day board: header + calendar strip + per-project panes. */
 export function Board() {
   const projects = useBoardStore((s) => s.projects);
   const orientation = useBoardStore((s) => s.orientation);
   const dayKey = useBoardStore((s) => s.dayKey);
+  const theme = useThemeStore((s) => s.theme);
 
   // "vertical" split = side-by-side columns; "horizontal" split = stacked rows.
   const direction = orientation === "vertical" ? "flex-row" : "flex-col";
@@ -29,8 +32,11 @@ export function Board() {
           <SearchPanel />
           <AddProjectButton />
           <OrientationToggle />
+          <ThemeSelector />
         </div>
       </header>
+
+      {theme === "citrus" && <div className="citrus-strip" aria-hidden="true" />}
 
       <div className="flex items-center gap-2.5 border-b border-line-soft bg-subtle px-5 py-[9px]">
         <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">Hoy</span>
@@ -49,7 +55,7 @@ export function Board() {
           </p>
         </div>
       ) : (
-        <div className={`flex flex-1 gap-3.5 overflow-auto bg-sunken p-4 ${direction}`}>
+        <div className={`board-canvas flex flex-1 gap-3.5 overflow-auto bg-sunken p-4 ${direction}`}>
           {projects.map((project) => (
             <div key={project.slug} className="min-w-0 flex-1">
               <ProjectColumn slug={project.slug} />

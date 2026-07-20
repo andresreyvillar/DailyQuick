@@ -22,4 +22,15 @@ describe("OrientationToggle", () => {
     expect(localStorage.getItem("dailyquick:orientation")).toBe("horizontal");
     expect(rows).toHaveAttribute("aria-pressed", "true");
   });
+
+  it("selects the grid layout", () => {
+    render(<OrientationToggle />);
+    const grid = screen.getByRole("button", { name: "Vista en rejilla" });
+
+    fireEvent.click(grid);
+
+    expect(useBoardStore.getState().orientation).toBe("grid");
+    expect(localStorage.getItem("dailyquick:orientation")).toBe("grid");
+    expect(grid).toHaveAttribute("aria-pressed", "true");
+  });
 });

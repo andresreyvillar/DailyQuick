@@ -65,6 +65,21 @@ describe("Board", () => {
     expect(header).toHaveAttribute("data-accent-color", "#E54D2E");
   });
 
+  it("lays out the board as a grid in grid mode", async () => {
+    await seedTwoProjects();
+    useBoardStore.setState({ orientation: "grid" });
+    render(<Board />);
+    expect(screen.getByTestId("board-canvas")).toHaveClass("grid");
+  });
+
+  it("lays out the board as flex columns in vertical mode", async () => {
+    await seedTwoProjects();
+    render(<Board />);
+    const canvas = screen.getByTestId("board-canvas");
+    expect(canvas).toHaveClass("flex");
+    expect(canvas).toHaveClass("flex-row");
+  });
+
   it("shows an empty state and no columns when the day has no projects", () => {
     render(<Board />);
     expect(screen.getByTestId("empty-state")).toBeInTheDocument();

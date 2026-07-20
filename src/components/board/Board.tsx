@@ -30,7 +30,8 @@ export function Board() {
   const createProjectFromEvent = useBoardStore((s) => s.createProjectFromEvent);
   const theme = useThemeStore((s) => s.theme);
 
-  // "vertical" split = side-by-side columns; "horizontal" split = stacked rows.
+  // "vertical" = side-by-side columns; "horizontal" = stacked rows; "grid" = wrapping card grid.
+  const isGrid = orientation === "grid";
   const direction = orientation === "vertical" ? "flex-row" : "flex-col";
 
   // Dropping a context chip (forecast / calendar event / recent) on the board creates that project.
@@ -127,9 +128,16 @@ export function Board() {
             </p>
           </div>
         ) : (
-          <div className={`board-canvas flex flex-1 gap-3.5 overflow-auto bg-sunken p-4 ${direction}`}>
+          <div
+            data-testid="board-canvas"
+            className={
+              isGrid
+                ? "board-canvas grid flex-1 content-start gap-3.5 overflow-auto bg-sunken p-4 [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]"
+                : `board-canvas flex flex-1 gap-3.5 overflow-auto bg-sunken p-4 ${direction}`
+            }
+          >
             {projects.map((project) => (
-              <div key={project.slug} className="min-w-0 flex-1">
+              <div key={project.slug} className={isGrid ? "min-h-[260px] min-w-0" : "min-w-0 flex-1"}>
                 <ProjectColumn slug={project.slug} />
               </div>
             ))}

@@ -11,12 +11,14 @@ use serde::{Deserialize, Serialize};
 use super::date::validate_key;
 use super::error::StorageError;
 
-/// One forecast entry for a day: a project code, its display name, and forecasted hours.
+/// One forecast entry for a day: a project code and display name. Hours are optional (the app shows
+/// only the name; the source rolls up weekly, so a per-day figure would be misleading).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ForecastProject {
     pub code: String,
     pub name: String,
-    pub hours: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hours: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub color: Option<String>,
 }
@@ -74,8 +76,21 @@ mod tests {
         let projects = read_forecast(root.path(), "2026-07-20").unwrap();
         assert_eq!(projects.len(), 2);
         assert_eq!(projects[0].name, "Oakmond");
-        assert_eq!(projects[0].hours, 6.5);
+        assert_eq!(projects[0].hours, Some(6.5));
         assert_eq!(projects[1].code, "HAN2602");
+    }
+
+    #[test]
+    fn entries_without_hours_parse() {
+        let root = tempdir().unwrap();
+        write_cache(
+            root.path(),
+            r#"{ "days": { "2026-07-20": [ { "code": "DUI2601", "name": "Duin" } ] } }"#,
+        );
+        let projects = read_forecast(root.path(), "2026-07-20").unwrap();
+        assert_eq!(projects.len(), 1);
+        assert_eq!(projects[0].name, "Duin");
+        assert_eq!(projects[0].hours, None);
     }
 
     #[test]

@@ -112,7 +112,7 @@ export async function listCalendars(): Promise<CalendarInfo[]> {
 export const forecastProjectSchema = z.object({
   code: z.string(),
   name: z.string(),
-  hours: z.number(),
+  hours: z.number().optional(),
   color: z.string().nullable().optional(),
 });
 

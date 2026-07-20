@@ -25,16 +25,15 @@ beforeEach(() => {
 });
 
 describe("ForecastProjects", () => {
-  it("renders a chip per forecast project with name and hours", async () => {
+  it("renders a chip per forecast project, showing only the name (no hours)", async () => {
     mockListForecast.mockResolvedValue([
-      { code: "ILA2404", name: "Oakmond", hours: 6.5 },
-      { code: "HAN2602", name: "Celonis", hours: 1 },
+      { code: "HAN2602", name: "Celonis" },
+      { code: "DUI2601", name: "Duin" },
     ]);
     render(<ForecastProjects />);
-    expect(await screen.findByText("Oakmond")).toBeInTheDocument();
-    expect(screen.getByText("Celonis")).toBeInTheDocument();
-    expect(screen.getByText("6.5h")).toBeInTheDocument();
-    expect(screen.getByText("1h")).toBeInTheDocument();
+    expect(await screen.findByText("Celonis")).toBeInTheDocument();
+    expect(screen.getByText("Duin")).toBeInTheDocument();
+    expect(screen.queryByText(/\dh/)).not.toBeInTheDocument();
   });
 
   it("shows a quiet empty state when there is no forecast", async () => {
@@ -44,7 +43,7 @@ describe("ForecastProjects", () => {
   });
 
   it("creates a project with an unused accent when a chip is clicked", async () => {
-    mockListForecast.mockResolvedValue([{ code: "ILA2404", name: "Oakmond", hours: 6.5 }]);
+    mockListForecast.mockResolvedValue([{ code: "ILA2404", name: "Oakmond" }]);
     mockCreateProject.mockResolvedValue({ slug: "oakmond", title: "Oakmond", color: "#4F7FD6", order: 0 });
     render(<ForecastProjects />);
     fireEvent.click(await screen.findByRole("button", { name: "Crear proyecto Oakmond" }));
@@ -58,7 +57,7 @@ describe("ForecastProjects", () => {
       dayKey: "2026-07-20",
       projects: [{ slug: "oakmond", frontmatter: { title: "Oakmond", color: "#4F7FD6", order: 0 }, body: "" }],
     });
-    mockListForecast.mockResolvedValue([{ code: "ILA2404", name: "Oakmond", hours: 6.5 }]);
+    mockListForecast.mockResolvedValue([{ code: "ILA2404", name: "Oakmond" }]);
     render(<ForecastProjects />);
     expect(await screen.findByRole("button", { name: "Oakmond ya añadido" })).toBeDisabled();
   });

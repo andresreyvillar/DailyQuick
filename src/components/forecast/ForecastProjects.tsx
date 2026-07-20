@@ -9,11 +9,6 @@ type Load =
   | { kind: "ready"; items: ForecastProject[] }
   | { kind: "error" };
 
-/** "6.5h" / "1h" — trims a trailing `.0`. */
-function hoursLabel(hours: number): string {
-  return `${Number.isInteger(hours) ? hours : hours.toFixed(1)}h`;
-}
-
 /** Read-only strip of the day's forecasted projects; clicking a chip creates that project column. */
 export function ForecastProjects() {
   const dayKey = useBoardStore((s) => s.dayKey);
@@ -67,7 +62,6 @@ export function ForecastProjects() {
       <ul className="flex flex-wrap items-center gap-2">
         {load.items.map((project) => {
           const added = existing.has(project.name.toLowerCase());
-          const sub = added ? `${hoursLabel(project.hours)} · añadido` : hoursLabel(project.hours);
           return (
             <li key={project.code}>
               <button
@@ -95,7 +89,9 @@ export function ForecastProjects() {
                 </span>
                 <span className="flex min-w-0 flex-col justify-center gap-px">
                   <span className="truncate text-[12px] leading-tight text-body">{project.name}</span>
-                  <span className="font-mono text-[10px] leading-none tracking-[0.02em] text-faint">{sub}</span>
+                  {added && (
+                    <span className="text-[10px] leading-none text-faint">añadido</span>
+                  )}
                 </span>
               </button>
             </li>

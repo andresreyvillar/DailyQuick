@@ -1,15 +1,19 @@
 {
-  "_comment": "Sample of the disposable forecast cache. Copy to ~/DailyQuick/.dailyquick/forecast.json to preview the Forecast strip. Produced for real by the /forecast Claude Code step (which reads the Forecast MCP). Safe to delete — the app degrades to an empty strip.",
+  "_comment": "Disposable forecast cache. Copy to ~/DailyQuick/.dailyquick/forecast.json to preview the Forecast strip. Produced for real by the /forecast Claude Code step (which reads the Forecast MCP, a WEEKLY rollup per project). The app shows only project names — 'hours' is optional and ignored. Same projects repeat across the week's days. Safe to delete.",
   "generatedAt": "2026-07-20T08:00:00Z",
   "userEmail": "andres.rey@clouddistrict.com",
   "days": {
     "2026-07-20": [
-      { "code": "ILA2404", "name": "Oakmond", "hours": 6.5 },
-      { "code": "HAN2602", "name": "Celonis", "hours": 1 }
+      { "code": "DUI2601", "name": "Duin", "hours": 2 },
+      { "code": "HAN2602", "name": "Celonis", "hours": 5 },
+      { "code": "JRB2601", "name": "JRB", "hours": 10 },
+      { "code": "PAR2502", "name": "Paradores", "hours": 5 }
     ],
     "2026-07-21": [
-      { "code": "ILA2404", "name": "Oakmond", "hours": 4 },
-      { "code": "PAR2502", "name": "Paradores", "hours": 3.5 }
+      { "code": "DUI2601", "name": "Duin" },
+      { "code": "HAN2602", "name": "Celonis" },
+      { "code": "JRB2601", "name": "JRB" },
+      { "code": "PAR2502", "name": "Paradores" }
     ]
   }
 }

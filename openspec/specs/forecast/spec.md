@@ -8,12 +8,17 @@ The system SHALL read the selected day's forecasted projects from a local, dispo
 `~/DailyQuick/.dailyquick/forecast.json`. The app SHALL NOT perform any network request or hold any
 credentials to obtain forecast data; the cache is produced outside the app. A missing cache file, or a
 day absent from the cache, SHALL yield an empty forecast (never an error). Each forecast entry has a
-project code, a display name, and forecasted hours for that day.
+project code and a display name; forecasted hours are optional and the app does not depend on them.
 
 #### Scenario: Return the projects forecast for a day
-- **GIVEN** `~/DailyQuick/.dailyquick/forecast.json` lists, for `2026-07-20`, `Oakmond` (6.5h) and `Celonis` (1h)
+- **GIVEN** `~/DailyQuick/.dailyquick/forecast.json` lists, for `2026-07-20`, `Celonis` and `Duin`
 - **WHEN** the app reads the forecast for `2026-07-20`
-- **THEN** it returns those two projects with their names and hours
+- **THEN** it returns those two projects with their names
+
+#### Scenario: Entries without hours are valid
+- **GIVEN** a `forecast.json` whose entries have `code` and `name` but no `hours`
+- **WHEN** the app reads the forecast
+- **THEN** it returns the entries without error
 
 #### Scenario: Missing cache file yields an empty forecast
 - **GIVEN** no `forecast.json` exists under `.dailyquick/`
@@ -32,13 +37,12 @@ project code, a display name, and forecasted hours for that day.
 
 ### Requirement: Show the day's forecast as chips
 The board SHALL display the selected day's forecast projects as a strip of chips, each showing the
-project name and its forecasted hours. When the day has no forecast, the strip SHALL show a quiet
-empty state rather than an error.
+project name. When the day has no forecast, the strip SHALL show a quiet empty state rather than an error.
 
 #### Scenario: Chips reflect the day's forecast
-- **GIVEN** the forecast for the selected day has `Oakmond` (6.5h) and `Celonis` (1h)
+- **GIVEN** the forecast for the selected day has `Celonis` and `Duin`
 - **WHEN** the board renders
-- **THEN** a chip is shown for each, labeled with the project name and its hours
+- **THEN** a chip is shown for each, labeled with the project name
 
 #### Scenario: Empty forecast shows a quiet state
 - **GIVEN** the selected day has no forecast entries

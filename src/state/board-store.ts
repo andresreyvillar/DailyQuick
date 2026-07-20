@@ -13,6 +13,7 @@ import {
 import { addDays, todayKey } from "../lib/date-key";
 import { eventBlock, eventProjectBody } from "../lib/event-markdown";
 import { nextAccent } from "../lib/accent-palette";
+import { moveItem } from "../lib/board-reorder";
 
 export type Orientation = "vertical" | "horizontal" | "grid";
 
@@ -52,6 +53,8 @@ type BoardState = {
   persistBody: (slug: string) => Promise<void>;
   createProject: (title: string, color: string) => Promise<void>;
   deleteProject: (slug: string) => Promise<void>;
+  /** Reorder the frames, persisting each project's new `order` to frontmatter. */
+  reorderProject: (from: number, to: number) => Promise<void>;
   /** Recreate the previous day's projects (title + color, empty body) for the current day. */
   importPreviousDay: () => Promise<void>;
   setColor: (slug: string, color: string) => Promise<void>;
@@ -147,6 +150,21 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       }
     }
     await get().loadDay(dayKey);
+  },
+
+  async reorderProject(from, to) {
+    const { dayKey, projects } = get();
+    if (!dayKey) return;
+    const moved = moveItem(projects, from, to);
+    if (moved === projects) return; // no-op move: nothing to persist
+    const reordered = moved.map((p, index) => ({
+      ...p,
+      frontmatter: { ...p.frontmatter, order: index + 1 },
+    }));
+    set({ projects: reordered });
+    await Promise.all(
+      reordered.map((p) => writeNote(dayKey, p.slug, { frontmatter: p.frontmatter, body: p.body })),
+    );
   },
 
   async deleteProject(slug) {

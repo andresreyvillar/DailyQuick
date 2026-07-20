@@ -243,6 +243,39 @@ describe("board store", () => {
     expect(useBoardStore.getState().revisions.oakmond).toBe(1);
   });
 
+  it("reorderProject reorders the projects and rewrites each note's order", async () => {
+    mockListDay.mockResolvedValue([
+      { slug: "a", title: "A", color: null, order: 1 },
+      { slug: "b", title: "B", color: null, order: 2 },
+      { slug: "c", title: "C", color: null, order: 3 },
+    ]);
+    mockReadNote.mockImplementation(async (_key, slug) => ({
+      frontmatter: { title: slug.toUpperCase(), color: null, order: 0 },
+      body: `body-${slug}`,
+    }));
+    await useBoardStore.getState().loadDay("2026-07-20");
+    mockWriteNote.mockClear();
+
+    await useBoardStore.getState().reorderProject(2, 0); // move C to the front
+
+    expect(useBoardStore.getState().projects.map((p) => p.slug)).toEqual(["c", "a", "b"]);
+    const orders = Object.fromEntries(
+      mockWriteNote.mock.calls.map((call) => [call[1], call[2].frontmatter.order]),
+    );
+    expect(orders).toEqual({ c: 1, a: 2, b: 3 });
+  });
+
+  it("reorderProject is a no-op when the position is unchanged", async () => {
+    mockListDay.mockResolvedValue([{ slug: "a", title: "A", color: null, order: 1 }]);
+    mockReadNote.mockResolvedValue({ frontmatter: { title: "A", color: null, order: 1 }, body: "" });
+    await useBoardStore.getState().loadDay("2026-07-20");
+    mockWriteNote.mockClear();
+
+    await useBoardStore.getState().reorderProject(0, 0);
+
+    expect(mockWriteNote).not.toHaveBeenCalled();
+  });
+
   it("deleteProject deletes the note, drops the project, and clears its revision", async () => {
     mockListDay.mockResolvedValue([
       { slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 },

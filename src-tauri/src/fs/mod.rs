@@ -2,6 +2,7 @@
 //! and frontmatter parse/serialize. The filesystem is the single source of truth.
 
 pub mod date;
+pub mod diary;
 pub mod error;
 pub mod forecast;
 pub mod frontmatter;

@@ -11,6 +11,9 @@ vi.mock("../../lib/notes-api", () => ({
 
 // The real editor is Milkdown/ProseMirror (can't run in jsdom); stub it as a textarea
 // that forwards its value to `onChange`, so we can test the persistence wiring.
+// Stub the diary panel (its own test covers it; avoids the async cache read here).
+vi.mock("../diary/DiaryPanel", () => ({ DiaryPanel: () => null }));
+
 vi.mock("../editor/MarkdownEditor", () => ({
   MarkdownEditor: ({
     value,

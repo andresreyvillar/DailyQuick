@@ -122,3 +122,25 @@ export type ForecastProject = z.infer<typeof forecastProjectSchema>;
 export async function listForecast(dayKey: string): Promise<ForecastProject[]> {
   return z.array(forecastProjectSchema).parse(await invoke("read_forecast", { key: dayKey }));
 }
+
+/** A diary event, mirrors the Rust `DiaryEvent`. */
+export const diaryEventSchema = z.object({
+  time: z.string(),
+  source: z.string(),
+  who: z.string(),
+  text: z.string(),
+});
+
+/** A project's diary for a day, mirrors the Rust `DiaryEntry`. */
+export const diaryEntrySchema = z.object({
+  summary: z.string(),
+  events: z.array(diaryEventSchema).default([]),
+});
+
+export type DiaryEntry = z.infer<typeof diaryEntrySchema>;
+
+/** Read a project's diary for a day from the local cache; `null` when there is none. */
+export async function readDiary(dayKey: string, slug: string): Promise<DiaryEntry | null> {
+  const raw = await invoke("read_diary", { key: dayKey, slug });
+  return raw ? diaryEntrySchema.parse(raw) : null;
+}

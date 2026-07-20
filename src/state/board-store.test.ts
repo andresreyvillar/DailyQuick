@@ -177,11 +177,28 @@ describe("board store", () => {
 
     await useBoardStore.getState().createProjectFromEvent(meeting);
 
-    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Oakmond daily", "#3E63DD");
+    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Oakmond daily", "#4F7FD6");
     const writeArgs = mockWriteNote.mock.calls[0];
     expect(writeArgs[0]).toBe("2026-06-22");
     expect(writeArgs[1]).toBe("oakmond-daily");
     expect(writeArgs[2].body).toContain("## Notas");
+  });
+
+  it("createProjectFromEvent assigns the first accent not already in use", async () => {
+    mockListDay.mockResolvedValue([{ slug: "azul", title: "Azul", color: "#4F7FD6", order: 0 }]);
+    mockReadNote.mockResolvedValue({ frontmatter: { title: "Azul", color: "#4F7FD6", order: 0 }, body: "" });
+    await useBoardStore.getState().loadDay("2026-06-22");
+
+    mockCreateProject.mockResolvedValue({ slug: "oakmond-daily", title: "Oakmond daily", color: "#2F9AA8", order: 1 });
+    mockListDay.mockResolvedValue([
+      { slug: "azul", title: "Azul", color: "#4F7FD6", order: 0 },
+      { slug: "oakmond-daily", title: "Oakmond daily", color: "#2F9AA8", order: 1 },
+    ]);
+
+    await useBoardStore.getState().createProjectFromEvent(meeting);
+
+    // Azul is taken -> the event project takes the next free accent (Teal).
+    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Oakmond daily", "#2F9AA8");
   });
 
   it("createProjectFromEvent surfaces AlreadyExists (no write)", async () => {
@@ -249,7 +266,8 @@ describe("board store", () => {
 
     expect(mockListDay).toHaveBeenCalledWith("2026-06-21");
     expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Oakmond", "#E54D2E");
-    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Personal", "#9aa0a9");
+    // Personal had no color -> falls back to the first unused accent, not a neutral gray.
+    expect(mockCreateProject).toHaveBeenCalledWith("2026-06-22", "Personal", "#4F7FD6");
     expect(useBoardStore.getState().projects.map((p) => p.slug)).toEqual(["oakmond", "personal"]);
   });
 

@@ -24,17 +24,48 @@ beforeEach(() => {
 });
 
 describe("AddProjectButton", () => {
-  it("opens a form and creates a project with title + color", async () => {
-    mockCreateProject.mockResolvedValue({ slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 0 });
+  it("opens a form and creates a project with a title and a picked accent", async () => {
+    mockCreateProject.mockResolvedValue({ slug: "oakmond", title: "Oakmond", color: "#2F9AA8", order: 0 });
 
     render(<AddProjectButton />);
     fireEvent.click(screen.getByRole("button", { name: "Nuevo proyecto" }));
     fireEvent.change(screen.getByLabelText("Título del proyecto"), { target: { value: "Oakmond" } });
-    fireEvent.change(screen.getByLabelText("Color del proyecto"), { target: { value: "#e54d2e" } });
+    fireEvent.click(screen.getByLabelText("Color del proyecto"));
+    fireEvent.click(screen.getByRole("button", { name: "Teal" }));
     fireEvent.click(screen.getByRole("button", { name: "Crear" }));
 
     await waitFor(() =>
-      expect(mockCreateProject).toHaveBeenCalledWith("2026-06-21", "Oakmond", "#e54d2e"),
+      expect(mockCreateProject).toHaveBeenCalledWith("2026-06-21", "Oakmond", "#2F9AA8"),
+    );
+  });
+
+  it("offers the six-accent palette in the create form", () => {
+    render(<AddProjectButton />);
+    fireEvent.click(screen.getByRole("button", { name: "Nuevo proyecto" }));
+    fireEvent.click(screen.getByLabelText("Color del proyecto"));
+
+    for (const name of ["Azul", "Teal", "Verde", "Ámbar", "Rosa", "Violeta"]) {
+      expect(screen.getByRole("button", { name })).toBeInTheDocument();
+    }
+  });
+
+  it("defaults the new project to the first unused accent", async () => {
+    useBoardStore.setState({
+      dayKey: "2026-06-21",
+      projects: [
+        { slug: "a", frontmatter: { title: "A", color: "#4F7FD6", order: 0 }, body: "" },
+        { slug: "b", frontmatter: { title: "B", color: "#2F9AA8", order: 1 }, body: "" },
+      ],
+    });
+    mockCreateProject.mockResolvedValue({ slug: "c", title: "C", color: "#3A9D6B", order: 2 });
+
+    render(<AddProjectButton />);
+    fireEvent.click(screen.getByRole("button", { name: "Nuevo proyecto" }));
+    fireEvent.change(screen.getByLabelText("Título del proyecto"), { target: { value: "C" } });
+    fireEvent.click(screen.getByRole("button", { name: "Crear" }));
+
+    await waitFor(() =>
+      expect(mockCreateProject).toHaveBeenCalledWith("2026-06-21", "C", "#3A9D6B"),
     );
   });
 

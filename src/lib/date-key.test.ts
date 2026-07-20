@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addDays, parseDateKey, toDateKey, todayKey } from "./date-key";
+import { addDays, dayOffset, dayRelation, parseDateKey, toDateKey, todayKey } from "./date-key";
 
 describe("date-key", () => {
   it("formats a date as YYYY-MM-DD", () => {
@@ -38,5 +38,31 @@ describe("addDays", () => {
 
   it("steps within a month", () => {
     expect(addDays("2026-06-21", -1)).toBe("2026-06-20");
+  });
+});
+
+describe("dayOffset", () => {
+  it("is negative for a past day", () => {
+    expect(dayOffset("2026-07-17", "2026-07-20")).toBe(-3);
+  });
+
+  it("is zero for the same day", () => {
+    expect(dayOffset("2026-07-20", "2026-07-20")).toBe(0);
+  });
+
+  it("is positive for a future day", () => {
+    expect(dayOffset("2026-07-22", "2026-07-20")).toBe(2);
+  });
+
+  it("is correct across a month boundary", () => {
+    expect(dayOffset("2026-06-29", "2026-07-01")).toBe(-2);
+  });
+});
+
+describe("dayRelation", () => {
+  it("classifies past, today, and future", () => {
+    expect(dayRelation("2026-07-17", "2026-07-20")).toBe("past");
+    expect(dayRelation("2026-07-20", "2026-07-20")).toBe("today");
+    expect(dayRelation("2026-07-22", "2026-07-20")).toBe("future");
   });
 });

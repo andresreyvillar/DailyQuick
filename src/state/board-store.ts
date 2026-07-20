@@ -24,6 +24,13 @@ export function loadOrientation(): Orientation {
   return stored === "horizontal" ? "horizontal" : "vertical";
 }
 
+const CONTEXT_COLLAPSED_KEY = "dailyquick:context-collapsed";
+
+/** Read the persisted collapsed state of the day-context region, defaulting to expanded. */
+export function loadContextCollapsed(): boolean {
+  return localStorage.getItem(CONTEXT_COLLAPSED_KEY) === "true";
+}
+
 export type ProjectState = {
   slug: string;
   frontmatter: Frontmatter;
@@ -34,9 +41,13 @@ type BoardState = {
   dayKey: string | null;
   projects: ProjectState[];
   orientation: Orientation;
+  /** Whether the day-context region (calendar + forecast) is collapsed. */
+  contextCollapsed: boolean;
   loadDay: (key: string) => Promise<void>;
   setOrientation: (orientation: Orientation) => void;
   toggleOrientation: () => void;
+  setContextCollapsed: (collapsed: boolean) => void;
+  toggleContext: () => void;
   setBody: (slug: string, body: string) => void;
   persistBody: (slug: string) => Promise<void>;
   createProject: (title: string, color: string) => Promise<void>;
@@ -63,6 +74,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   dayKey: null,
   projects: [],
   orientation: loadOrientation(),
+  contextCollapsed: loadContextCollapsed(),
   revisions: {},
 
   async loadDay(key) {
@@ -83,6 +95,15 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   toggleOrientation() {
     get().setOrientation(get().orientation === "vertical" ? "horizontal" : "vertical");
+  },
+
+  setContextCollapsed(contextCollapsed) {
+    localStorage.setItem(CONTEXT_COLLAPSED_KEY, String(contextCollapsed));
+    set({ contextCollapsed });
+  },
+
+  toggleContext() {
+    get().setContextCollapsed(!get().contextCollapsed);
   },
 
   setBody(slug, body) {

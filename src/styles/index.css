@@ -169,6 +169,8 @@ html,
 body,
 #root {
   height: 100%;
+  /* The app chrome fills the window exactly; only the board canvas scrolls (its own overflow-auto). */
+  overflow: hidden;
 }
 
 body {

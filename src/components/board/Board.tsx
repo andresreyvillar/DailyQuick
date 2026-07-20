@@ -1,4 +1,4 @@
-import { type DragEvent, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
+import { type DragEvent, type PointerEvent as ReactPointerEvent, useRef, useState } from "react";
 
 import { nextAccent } from "../../lib/accent-palette";
 import { DND_MIME, parseDrag } from "../../lib/board-dnd";
@@ -38,34 +38,38 @@ export function Board() {
   const dropzoneRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef(0);
   const [drag, setDrag] = useState<{ from: number; slug: string; title: string } | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ slug: string; title: string } | null>(null);
 
-  function onGripDown(e: ReactPointerEvent, from: number, slug: string, title: string) {
+  // The grip captures the pointer, so move/up fire even over other frames or outside the board.
+  function startDrag(e: ReactPointerEvent, from: number, slug: string, title: string) {
     e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     dragStartRef.current = Date.now();
     setDrag({ from, slug, title });
+    setDragOverIndex(from);
   }
 
-  useEffect(() => {
+  function onDragMove(e: ReactPointerEvent) {
     if (!drag) return;
-    const current = drag;
-    function onUp(e: PointerEvent) {
-      const rect = dropzoneRef.current?.getBoundingClientRect();
-      const inside = rect
-        ? e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom
-        : true;
-      if (shouldDeleteOnDrop(inside, Date.now() - dragStartRef.current)) {
-        setPendingDelete({ slug: current.slug, title: current.title });
-      } else if (inside) {
-        const target = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-frame-index]");
-        const to = target ? Number((target as HTMLElement).dataset.frameIndex) : current.from;
-        if (!Number.isNaN(to)) void reorderProject(current.from, to);
-      }
-      setDrag(null);
+    const target = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-frame-index]");
+    setDragOverIndex(target ? Number((target as HTMLElement).dataset.frameIndex) : null);
+  }
+
+  function endDrag(e: ReactPointerEvent) {
+    if (!drag) return;
+    const rect = dropzoneRef.current?.getBoundingClientRect();
+    const inside = rect
+      ? e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom
+      : true;
+    if (shouldDeleteOnDrop(inside, Date.now() - dragStartRef.current)) {
+      setPendingDelete({ slug: drag.slug, title: drag.title });
+    } else if (inside && dragOverIndex !== null && dragOverIndex !== drag.from) {
+      void reorderProject(drag.from, dragOverIndex);
     }
-    window.addEventListener("pointerup", onUp);
-    return () => window.removeEventListener("pointerup", onUp);
-  }, [drag, reorderProject]);
+    setDrag(null);
+    setDragOverIndex(null);
+  }
 
   // "vertical" = side-by-side columns; "horizontal" = stacked rows; "grid" = wrapping card grid.
   const isGrid = orientation === "grid";
@@ -88,12 +92,12 @@ export function Board() {
 
   return (
     <main className="flex h-screen flex-col bg-surface">
-      <header className="flex items-center justify-between border-b border-line-soft px-5 py-3.5">
-        <div className="flex items-center gap-3.5">
+      <header className="flex items-center justify-between gap-3 overflow-x-auto border-b border-line-soft px-5 py-3.5">
+        <div className="flex shrink-0 items-center gap-3.5">
           <DayHeader dayKey={dayKey ?? todayKey()} />
           <DayNavigator />
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex shrink-0 items-center gap-2.5">
           <SearchPanel />
           <CarryOverButton />
           <AddProjectButton />
@@ -178,21 +182,28 @@ export function Board() {
               <div
                 key={project.slug}
                 data-frame-index={index}
-                className={`relative flex flex-col ${isGrid ? "min-h-[260px] min-w-0" : "min-w-0 flex-1"} ${
-                  drag?.slug === project.slug ? "opacity-60" : ""
+                className={`relative flex flex-col rounded-[var(--radius-col)] ${
+                  isGrid ? "min-h-[260px] min-w-0" : "min-w-0 flex-1"
+                } ${drag?.from === index ? "opacity-50" : ""} ${
+                  drag && dragOverIndex === index && drag.from !== index
+                    ? "ring-2 ring-offset-2 ring-[color:var(--date-accent)]"
+                    : ""
                 }`}
               >
                 <div
                   role="button"
                   aria-label={`Mover ${project.frontmatter.title}`}
                   title="Arrastra para reordenar; suéltalo fuera del tablero para eliminar"
-                  onPointerDown={(e) => onGripDown(e, index, project.slug, project.frontmatter.title)}
-                  className="flex h-4 shrink-0 cursor-grab items-center justify-center text-disabled hover:text-muted active:cursor-grabbing"
+                  onPointerDown={(e) => startDrag(e, index, project.slug, project.frontmatter.title)}
+                  onPointerMove={onDragMove}
+                  onPointerUp={endDrag}
+                  style={{ touchAction: "none" }}
+                  className="flex h-5 shrink-0 cursor-grab select-none items-center justify-center rounded-t-[var(--radius-col)] text-disabled hover:bg-black/5 hover:text-muted active:cursor-grabbing"
                 >
-                  <svg width="18" height="6" viewBox="0 0 18 6" fill="currentColor" aria-hidden="true">
-                    <circle cx="3" cy="3" r="1.3" />
-                    <circle cx="9" cy="3" r="1.3" />
-                    <circle cx="15" cy="3" r="1.3" />
+                  <svg width="20" height="7" viewBox="0 0 20 7" fill="currentColor" aria-hidden="true">
+                    <circle cx="4" cy="3.5" r="1.4" />
+                    <circle cx="10" cy="3.5" r="1.4" />
+                    <circle cx="16" cy="3.5" r="1.4" />
                   </svg>
                 </div>
                 <div className="min-h-0 flex-1">

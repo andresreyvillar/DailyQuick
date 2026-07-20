@@ -16,8 +16,9 @@ vi.mock("../editor/MarkdownEditor", () => ({ MarkdownEditor: () => null }));
 // Stub the calendar strip + filter (their own tests cover them; avoids native/async fetches here).
 vi.mock("../calendar/CalendarEvents", () => ({ CalendarEvents: () => null }));
 vi.mock("../calendar/CalendarFilter", () => ({ CalendarFilter: () => null }));
-// Stub the forecast strip (its own test covers it; avoids the async cache read here).
+// Stub the forecast + recommendations strips (their own tests cover them; avoids async reads here).
 vi.mock("../forecast/ForecastProjects", () => ({ ForecastProjects: () => null }));
+vi.mock("../forecast/RecommendedProjects", () => ({ RecommendedProjects: () => null }));
 
 import { listDay, readNote } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";

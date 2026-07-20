@@ -4,6 +4,7 @@ import { useThemeStore } from "../../state/theme-store";
 import { CalendarEvents } from "../calendar/CalendarEvents";
 import { CalendarFilter } from "../calendar/CalendarFilter";
 import { ForecastProjects } from "../forecast/ForecastProjects";
+import { RecommendedProjects } from "../forecast/RecommendedProjects";
 import { AddProjectButton } from "./AddProjectButton";
 import { CarryOverButton } from "./CarryOverButton";
 import { DayHeader } from "./DayHeader";
@@ -81,6 +82,7 @@ export function Board() {
             <div className="flex items-center gap-2.5 px-5 pb-2 pl-[calc(1.25rem+2rem)]">
               <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">Forecast</span>
               <ForecastProjects />
+              <RecommendedProjects />
             </div>
           </>
         )}

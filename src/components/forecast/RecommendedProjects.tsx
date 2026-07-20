@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { accentForKey, nextAccent } from "../../lib/accent-palette";
+import { DND_MIME, serializeDrag } from "../../lib/board-dnd";
 import { addDays } from "../../lib/date-key";
 import { listDay, listForecast, type NoteSummary } from "../../lib/notes-api";
 import { recommendedFromRecent } from "../../lib/recommend";
@@ -71,6 +72,10 @@ export function RecommendedProjects() {
           <li key={item.slug}>
             <button
               type="button"
+              draggable
+              onDragStart={(e) =>
+                e.dataTransfer.setData(DND_MIME, serializeDrag({ kind: "recent", title: item.title, color: item.color ?? null }))
+              }
               aria-label={`Añadir ${item.title}`}
               title={item.title}
               onClick={() => void add(item)}

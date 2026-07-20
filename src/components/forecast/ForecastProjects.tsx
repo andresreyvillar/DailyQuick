@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { accentForKey } from "../../lib/accent-palette";
+import { DND_MIME, serializeDrag } from "../../lib/board-dnd";
 import { listForecast, type ForecastProject } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";
 
@@ -67,6 +68,8 @@ export function ForecastProjects() {
               <button
                 type="button"
                 disabled={added}
+                draggable={!added}
+                onDragStart={(e) => e.dataTransfer.setData(DND_MIME, serializeDrag({ kind: "forecast", project }))}
                 aria-label={added ? `${project.name} ya añadido` : `Crear proyecto ${project.name}`}
                 title={project.name}
                 onClick={() => void create(project)}

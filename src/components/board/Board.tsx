@@ -1,10 +1,12 @@
-import { type DragEvent } from "react";
+import { type DragEvent, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
 
 import { nextAccent } from "../../lib/accent-palette";
 import { DND_MIME, parseDrag } from "../../lib/board-dnd";
+import { shouldDeleteOnDrop } from "../../lib/board-reorder";
 import { todayKey } from "../../lib/date-key";
 import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
+import { DeleteConfirm } from "./DeleteConfirm";
 import { CalendarEvents } from "../calendar/CalendarEvents";
 import { CalendarFilter } from "../calendar/CalendarFilter";
 import { ForecastProjects } from "../forecast/ForecastProjects";
@@ -28,7 +30,42 @@ export function Board() {
   const createProject = useBoardStore((s) => s.createProject);
   const createProjectFromForecast = useBoardStore((s) => s.createProjectFromForecast);
   const createProjectFromEvent = useBoardStore((s) => s.createProjectFromEvent);
+  const reorderProject = useBoardStore((s) => s.reorderProject);
+  const deleteProject = useBoardStore((s) => s.deleteProject);
   const theme = useThemeStore((s) => s.theme);
+
+  // Pointer drag to reorder frames, or drag off the board + hold to delete (see board-reorder helpers).
+  const dropzoneRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef(0);
+  const [drag, setDrag] = useState<{ from: number; slug: string; title: string } | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ slug: string; title: string } | null>(null);
+
+  function onGripDown(e: ReactPointerEvent, from: number, slug: string, title: string) {
+    e.preventDefault();
+    dragStartRef.current = Date.now();
+    setDrag({ from, slug, title });
+  }
+
+  useEffect(() => {
+    if (!drag) return;
+    const current = drag;
+    function onUp(e: PointerEvent) {
+      const rect = dropzoneRef.current?.getBoundingClientRect();
+      const inside = rect
+        ? e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom
+        : true;
+      if (shouldDeleteOnDrop(inside, Date.now() - dragStartRef.current)) {
+        setPendingDelete({ slug: current.slug, title: current.title });
+      } else if (inside) {
+        const target = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-frame-index]");
+        const to = target ? Number((target as HTMLElement).dataset.frameIndex) : current.from;
+        if (!Number.isNaN(to)) void reorderProject(current.from, to);
+      }
+      setDrag(null);
+    }
+    window.addEventListener("pointerup", onUp);
+    return () => window.removeEventListener("pointerup", onUp);
+  }, [drag, reorderProject]);
 
   // "vertical" = side-by-side columns; "horizontal" = stacked rows; "grid" = wrapping card grid.
   const isGrid = orientation === "grid";
@@ -112,6 +149,7 @@ export function Board() {
       </div>
 
       <div
+        ref={dropzoneRef}
         data-testid="board-dropzone"
         className="flex min-h-0 flex-1 flex-col"
         onDragOver={(e) => e.preventDefault()}
@@ -136,14 +174,46 @@ export function Board() {
                 : `board-canvas flex flex-1 gap-3.5 overflow-auto bg-sunken p-4 ${direction}`
             }
           >
-            {projects.map((project) => (
-              <div key={project.slug} className={isGrid ? "min-h-[260px] min-w-0" : "min-w-0 flex-1"}>
-                <ProjectColumn slug={project.slug} />
+            {projects.map((project, index) => (
+              <div
+                key={project.slug}
+                data-frame-index={index}
+                className={`relative flex flex-col ${isGrid ? "min-h-[260px] min-w-0" : "min-w-0 flex-1"} ${
+                  drag?.slug === project.slug ? "opacity-60" : ""
+                }`}
+              >
+                <div
+                  role="button"
+                  aria-label={`Mover ${project.frontmatter.title}`}
+                  title="Arrastra para reordenar; suéltalo fuera del tablero para eliminar"
+                  onPointerDown={(e) => onGripDown(e, index, project.slug, project.frontmatter.title)}
+                  className="flex h-4 shrink-0 cursor-grab items-center justify-center text-disabled hover:text-muted active:cursor-grabbing"
+                >
+                  <svg width="18" height="6" viewBox="0 0 18 6" fill="currentColor" aria-hidden="true">
+                    <circle cx="3" cy="3" r="1.3" />
+                    <circle cx="9" cy="3" r="1.3" />
+                    <circle cx="15" cy="3" r="1.3" />
+                  </svg>
+                </div>
+                <div className="min-h-0 flex-1">
+                  <ProjectColumn slug={project.slug} />
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {pendingDelete && (
+        <DeleteConfirm
+          title={pendingDelete.title}
+          onConfirm={() => {
+            void deleteProject(pendingDelete.slug);
+            setPendingDelete(null);
+          }}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </main>
   );
 }

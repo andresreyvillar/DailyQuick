@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use crate::fs::forecast::{self, ForecastProject};
 use crate::fs::frontmatter::Note;
 use crate::fs::search::{self, SearchHit};
 use crate::fs::store::{self, NoteSummary};
@@ -57,4 +58,9 @@ pub fn list_events(key: String) -> Result<Vec<crate::calendar::CalendarEvent>, S
 #[tauri::command]
 pub fn list_calendars() -> Result<Vec<crate::calendar::CalendarInfo>, StorageError> {
     crate::calendar::list_calendars()
+}
+
+#[tauri::command]
+pub fn read_forecast(key: String) -> Result<Vec<ForecastProject>, StorageError> {
+    forecast::read_forecast(&root()?, &key)
 }

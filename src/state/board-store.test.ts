@@ -319,6 +319,24 @@ describe("board store", () => {
     expect(useBoardStore.getState().projects.map((p) => p.slug)).toEqual(["b"]);
   });
 
+  it("createProjectFromForecast creates a project with the name and first unused accent", async () => {
+    mockListDay.mockResolvedValue([{ slug: "azul", title: "Azul", color: "#4F7FD6", order: 0 }]);
+    mockReadNote.mockResolvedValue({ frontmatter: { title: "Azul", color: "#4F7FD6", order: 0 }, body: "" });
+    await useBoardStore.getState().loadDay("2026-07-20");
+
+    mockCreateProject.mockResolvedValue({ slug: "oakmond", title: "Oakmond", color: "#2F9AA8", order: 1 });
+    mockListDay.mockResolvedValue([
+      { slug: "azul", title: "Azul", color: "#4F7FD6", order: 0 },
+      { slug: "oakmond", title: "Oakmond", color: "#2F9AA8", order: 1 },
+    ]);
+
+    await useBoardStore.getState().createProjectFromForecast({ code: "ILA2404", name: "Oakmond", hours: 6.5 });
+
+    // Azul is taken -> the forecast project takes the next free accent (Teal).
+    expect(mockCreateProject).toHaveBeenCalledWith("2026-07-20", "Oakmond", "#2F9AA8");
+    expect(useBoardStore.getState().projects.map((p) => p.slug)).toEqual(["azul", "oakmond"]);
+  });
+
   it("applyTemplate seeds the note body, persists it, and bumps the revision", async () => {
     mockListDay.mockResolvedValue([{ slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 }]);
     mockReadNote.mockResolvedValue({

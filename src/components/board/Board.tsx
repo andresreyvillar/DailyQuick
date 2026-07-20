@@ -3,6 +3,7 @@ import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
 import { CalendarEvents } from "../calendar/CalendarEvents";
 import { CalendarFilter } from "../calendar/CalendarFilter";
+import { ForecastProjects } from "../forecast/ForecastProjects";
 import { AddProjectButton } from "./AddProjectButton";
 import { CarryOverButton } from "./CarryOverButton";
 import { DayHeader } from "./DayHeader";
@@ -44,6 +45,11 @@ export function Board() {
         <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">Hoy</span>
         <CalendarEvents />
         <CalendarFilter />
+      </div>
+
+      <div className="flex items-center gap-2.5 border-b border-line-soft bg-subtle px-5 py-[9px]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">Forecast</span>
+        <ForecastProjects />
       </div>
 
       {projects.length === 0 ? (

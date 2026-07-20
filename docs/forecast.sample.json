@@ -1,0 +1,15 @@
+{
+  "_comment": "Sample of the disposable forecast cache. Copy to ~/DailyQuick/.dailyquick/forecast.json to preview the Forecast strip. Produced for real by the /forecast Claude Code step (which reads the Forecast MCP). Safe to delete — the app degrades to an empty strip.",
+  "generatedAt": "2026-07-20T08:00:00Z",
+  "userEmail": "andres.rey@clouddistrict.com",
+  "days": {
+    "2026-07-20": [
+      { "code": "ILA2404", "name": "Oakmond", "hours": 6.5 },
+      { "code": "HAN2602", "name": "Celonis", "hours": 1 }
+    ],
+    "2026-07-21": [
+      { "code": "ILA2404", "name": "Oakmond", "hours": 4 },
+      { "code": "PAR2502", "name": "Paradores", "hours": 3.5 }
+    ]
+  }
+}

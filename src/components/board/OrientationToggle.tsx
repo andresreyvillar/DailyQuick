@@ -18,7 +18,18 @@ function HorizontalBars() {
   );
 }
 
-/** Segmented control switching the board split between columns (vertical) and rows (horizontal). */
+function GridCells() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="4.5" height="4.5" rx="1" fill="currentColor" />
+      <rect x="8.5" y="3" width="4.5" height="4.5" rx="1" fill="currentColor" />
+      <rect x="3" y="8.5" width="4.5" height="4.5" rx="1" fill="currentColor" />
+      <rect x="8.5" y="8.5" width="4.5" height="4.5" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Segmented control choosing the board layout: columns (vertical), rows (horizontal), or grid. */
 export function OrientationToggle() {
   const orientation = useBoardStore((s) => s.orientation);
   const setOrientation = useBoardStore((s) => s.setOrientation);
@@ -49,6 +60,15 @@ export function OrientationToggle() {
         className={seg(orientation === "horizontal")}
       >
         <HorizontalBars />
+      </button>
+      <button
+        type="button"
+        aria-label="Vista en rejilla"
+        aria-pressed={orientation === "grid"}
+        onClick={() => setOrientation("grid")}
+        className={seg(orientation === "grid")}
+      >
+        <GridCells />
       </button>
     </div>
   );

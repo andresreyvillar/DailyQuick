@@ -14,14 +14,14 @@ import { addDays, todayKey } from "../lib/date-key";
 import { eventBlock, eventProjectBody } from "../lib/event-markdown";
 import { nextAccent } from "../lib/accent-palette";
 
-export type Orientation = "vertical" | "horizontal";
+export type Orientation = "vertical" | "horizontal" | "grid";
 
 const ORIENTATION_KEY = "dailyquick:orientation";
 
-/** Read the persisted split orientation, defaulting to vertical (side-by-side columns). */
+/** Read the persisted board layout, defaulting to vertical (side-by-side columns). */
 export function loadOrientation(): Orientation {
   const stored = localStorage.getItem(ORIENTATION_KEY);
-  return stored === "horizontal" ? "horizontal" : "vertical";
+  return stored === "horizontal" || stored === "grid" ? stored : "vertical";
 }
 
 const CONTEXT_COLLAPSED_KEY = "dailyquick:context-collapsed";
@@ -94,7 +94,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   toggleOrientation() {
-    get().setOrientation(get().orientation === "vertical" ? "horizontal" : "vertical");
+    const order: Orientation[] = ["vertical", "horizontal", "grid"];
+    get().setOrientation(order[(order.indexOf(get().orientation) + 1) % order.length]);
   },
 
   setContextCollapsed(contextCollapsed) {

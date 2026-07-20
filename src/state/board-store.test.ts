@@ -81,12 +81,20 @@ describe("board store", () => {
     expect(loadContextCollapsed()).toBe(true);
   });
 
-  it("toggleOrientation flips vertical <-> horizontal", () => {
+  it("toggleOrientation cycles vertical -> horizontal -> grid -> vertical", () => {
     expect(useBoardStore.getState().orientation).toBe("vertical");
     useBoardStore.getState().toggleOrientation();
     expect(useBoardStore.getState().orientation).toBe("horizontal");
     useBoardStore.getState().toggleOrientation();
+    expect(useBoardStore.getState().orientation).toBe("grid");
+    useBoardStore.getState().toggleOrientation();
     expect(useBoardStore.getState().orientation).toBe("vertical");
+  });
+
+  it("loadOrientation restores a persisted grid layout", () => {
+    useBoardStore.getState().setOrientation("grid");
+    expect(localStorage.getItem("dailyquick:orientation")).toBe("grid");
+    expect(loadOrientation()).toBe("grid");
   });
 
   it("persistBody writes the new body while preserving frontmatter", async () => {

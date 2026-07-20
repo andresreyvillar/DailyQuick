@@ -1,4 +1,4 @@
-import { parseDateKey } from "../../lib/date-key";
+import { todayKey } from "../../lib/date-key";
 import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
 import { CalendarEvents } from "../calendar/CalendarEvents";
@@ -26,7 +26,7 @@ export function Board() {
     <main className="flex h-screen flex-col bg-surface">
       <header className="flex items-center justify-between border-b border-line-soft px-5 py-3.5">
         <div className="flex items-center gap-3.5">
-          <DayHeader date={dayKey ? parseDateKey(dayKey) : new Date()} />
+          <DayHeader dayKey={dayKey ?? todayKey()} />
           <DayNavigator />
         </div>
         <div className="flex items-center gap-2.5">

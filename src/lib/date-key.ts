@@ -23,3 +23,23 @@ export function addDays(key: string, days: number): string {
   date.setDate(date.getDate() + days);
   return toDateKey(date);
 }
+
+const MS_PER_DAY = 86_400_000;
+
+/**
+ * Whole-day signed offset from `today` to `key` (negative = past, 0 = today, positive = future).
+ * Rounds the millisecond difference so DST transitions never yield a 23/25h drift.
+ */
+export function dayOffset(key: string, today: string = todayKey()): number {
+  const ms = parseDateKey(key).getTime() - parseDateKey(today).getTime();
+  return Math.round(ms / MS_PER_DAY);
+}
+
+export type DayRelation = "today" | "past" | "future";
+
+/** Whether `key` falls on `today`, before it, or after it. */
+export function dayRelation(key: string, today: string = todayKey()): DayRelation {
+  const offset = dayOffset(key, today);
+  if (offset === 0) return "today";
+  return offset < 0 ? "past" : "future";
+}

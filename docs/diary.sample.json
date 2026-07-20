@@ -1,0 +1,13 @@
+{
+  "_comment": "Disposable per-day diary cache. Path: ~/DailyQuick/.dailyquick/diary/<YYYY-MM-DD>.json. Copy this to ~/DailyQuick/.dailyquick/diary/2026-07-20.json (rename to today) to preview the Diario panel. Produced for real by the /project-diary Claude Code step (Apple Mail via AppleScript + Slack via MCP, synthesized with AI). Keyed by project slug. Sensitive — kept out of the editable notes. Safe to delete.",
+  "generatedAt": "2026-07-20T18:00:00Z",
+  "projects": {
+    "duin": {
+      "summary": "Abelardo (cliente) pidió por email adelantar la demo de RevOps; Lide propuso en #duin revisar el pipeline antes del viernes.",
+      "events": [
+        { "time": "10:12", "source": "mail", "who": "Abelardo", "text": "pide adelantar la demo de RevOps al jueves" },
+        { "time": "12:40", "source": "slack", "who": "Lide", "text": "propone revisar el pipeline antes del viernes en #duin" }
+      ]
+    }
+  }
+}

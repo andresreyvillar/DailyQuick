@@ -4,6 +4,7 @@ import { BASIC_TEMPLATE } from "../../lib/note-template";
 import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
 import { useDebouncedSave } from "../../features/day/useDebouncedSave";
+import { DiaryPanel } from "../diary/DiaryPanel";
 import { MarkdownEditor } from "../editor/MarkdownEditor";
 import { ColorPicker } from "../ui/ColorPicker";
 
@@ -154,6 +155,7 @@ export function ProjectColumn({ slug }: { slug: string }) {
         )}
       </header>
       <div className="flex-1 rounded-b-[var(--radius-col)] bg-surface">
+        <DiaryPanel slug={slug} />
         {isEmpty && (
           <div className="px-4 pt-3.5">
             <p className="mb-2.5 text-[13px] text-faint">Proyecto en blanco. Empieza con una plantilla:</p>

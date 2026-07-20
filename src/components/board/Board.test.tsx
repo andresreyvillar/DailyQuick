@@ -19,6 +19,8 @@ vi.mock("../calendar/CalendarFilter", () => ({ CalendarFilter: () => null }));
 // Stub the forecast + recommendations strips (their own tests cover them; avoids async reads here).
 vi.mock("../forecast/ForecastProjects", () => ({ ForecastProjects: () => null }));
 vi.mock("../forecast/RecommendedProjects", () => ({ RecommendedProjects: () => null }));
+// Stub the diary panel (rendered inside ProjectColumn; its own test covers it).
+vi.mock("../diary/DiaryPanel", () => ({ DiaryPanel: () => null }));
 
 import { listDay, readNote } from "../../lib/notes-api";
 import { DND_MIME, serializeDrag } from "../../lib/board-dnd";

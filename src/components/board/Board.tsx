@@ -183,7 +183,7 @@ export function Board() {
                 key={project.slug}
                 data-frame-index={index}
                 className={`relative flex flex-col rounded-[var(--radius-col)] ${
-                  isGrid ? "min-h-[260px] min-w-0" : "min-w-0 flex-1"
+                  isGrid ? "min-w-0 self-start" : "min-w-0 flex-1"
                 } ${drag?.from === index ? "opacity-50" : ""} ${
                   drag && dragOverIndex === index && drag.from !== index
                     ? "ring-2 ring-offset-2 ring-[color:var(--date-accent)]"
@@ -206,7 +206,7 @@ export function Board() {
                     <circle cx="16" cy="3.5" r="1.4" />
                   </svg>
                 </div>
-                <div className="min-h-0 flex-1">
+                <div className={isGrid ? "" : "min-h-0 flex-1"}>
                   <ProjectColumn slug={project.slug} />
                 </div>
               </div>

@@ -88,12 +88,12 @@ export function Board() {
 
   return (
     <main className="flex h-screen flex-col bg-surface">
-      <header className="flex items-center justify-between border-b border-line-soft px-5 py-3.5">
-        <div className="flex items-center gap-3.5">
+      <header className="flex items-center justify-between gap-3 overflow-x-auto border-b border-line-soft px-5 py-3.5">
+        <div className="flex shrink-0 items-center gap-3.5">
           <DayHeader dayKey={dayKey ?? todayKey()} />
           <DayNavigator />
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex shrink-0 items-center gap-2.5">
           <SearchPanel />
           <CarryOverButton />
           <AddProjectButton />

@@ -11,7 +11,7 @@ vi.mock("../lib/notes-api", () => ({
 
 import { createProject, deleteNote, ensureDay, listDay, readNote, writeNote } from "../lib/notes-api";
 import { todayKey } from "../lib/date-key";
-import { loadOrientation, useBoardStore } from "./board-store";
+import { loadContextCollapsed, loadOrientation, useBoardStore } from "./board-store";
 
 const mockListDay = vi.mocked(listDay);
 const mockReadNote = vi.mocked(readNote);
@@ -70,6 +70,15 @@ describe("board store", () => {
     expect(localStorage.getItem("dailyquick:orientation")).toBe("horizontal");
     expect(loadOrientation()).toBe("horizontal");
     expect(useBoardStore.getState().orientation).toBe("horizontal");
+  });
+
+  it("contextCollapsed defaults to expanded and persists to localStorage", () => {
+    expect(loadContextCollapsed()).toBe(false);
+    useBoardStore.setState({ contextCollapsed: false });
+    useBoardStore.getState().toggleContext();
+    expect(useBoardStore.getState().contextCollapsed).toBe(true);
+    expect(localStorage.getItem("dailyquick:context-collapsed")).toBe("true");
+    expect(loadContextCollapsed()).toBe(true);
   });
 
   it("toggleOrientation flips vertical <-> horizontal", () => {

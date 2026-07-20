@@ -18,6 +18,8 @@ export function Board() {
   const projects = useBoardStore((s) => s.projects);
   const orientation = useBoardStore((s) => s.orientation);
   const dayKey = useBoardStore((s) => s.dayKey);
+  const contextCollapsed = useBoardStore((s) => s.contextCollapsed);
+  const toggleContext = useBoardStore((s) => s.toggleContext);
   const theme = useThemeStore((s) => s.theme);
 
   // "vertical" split = side-by-side columns; "horizontal" split = stacked rows.
@@ -41,15 +43,47 @@ export function Board() {
 
       {theme === "citrus" && <div className="citrus-strip" aria-hidden="true" />}
 
-      <div className="flex items-center gap-2.5 border-b border-line-soft bg-subtle px-5 py-[9px]">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">Hoy</span>
-        <CalendarEvents />
-        <CalendarFilter />
-      </div>
-
-      <div className="flex items-center gap-2.5 border-b border-line-soft bg-subtle px-5 py-[9px]">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">Forecast</span>
-        <ForecastProjects />
+      {/* Day-context region: compact, collapsible (calendar events + forecast). */}
+      <div className="border-b border-line-soft bg-subtle">
+        {contextCollapsed ? (
+          <div className="flex items-center px-5 py-1.5">
+            <button
+              type="button"
+              aria-label="Mostrar contexto del día"
+              aria-expanded={false}
+              onClick={toggleContext}
+              className="flex h-6 items-center gap-1.5 rounded-md px-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-faint hover:bg-hover"
+            >
+              <svg width="10" height="10" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Contexto
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 px-5 pb-1 pt-1.5">
+              <button
+                type="button"
+                aria-label="Ocultar contexto del día"
+                aria-expanded={true}
+                onClick={toggleContext}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-faint hover:bg-hover"
+              >
+                <svg width="10" height="10" viewBox="0 0 16 16" className="rotate-90" aria-hidden="true">
+                  <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">Hoy</span>
+              <CalendarEvents />
+              <CalendarFilter />
+            </div>
+            <div className="flex items-center gap-2.5 px-5 pb-2 pl-[calc(1.25rem+2rem)]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-faint">Forecast</span>
+              <ForecastProjects />
+            </div>
+          </>
+        )}
       </div>
 
       {projects.length === 0 ? (

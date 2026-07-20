@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../lib/notes-api", () => ({
@@ -29,7 +29,7 @@ const mockReadNote = vi.mocked(readNote);
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
-  useBoardStore.setState({ dayKey: null, projects: [], orientation: "vertical" });
+  useBoardStore.setState({ dayKey: null, projects: [], orientation: "vertical", contextCollapsed: false });
 });
 
 async function seedTwoProjects() {
@@ -67,6 +67,18 @@ describe("Board", () => {
     render(<Board />);
     expect(screen.getByTestId("empty-state")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
+  });
+
+  it("collapses and expands the day-context region", () => {
+    render(<Board />);
+    expect(screen.getByText("Forecast")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Ocultar contexto del día" }));
+    expect(screen.queryByText("Forecast")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Mostrar contexto del día" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Mostrar contexto del día" }));
+    expect(screen.getByText("Forecast")).toBeInTheDocument();
   });
 
   it("header shows the selected day's date", async () => {

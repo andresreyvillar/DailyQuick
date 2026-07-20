@@ -27,18 +27,23 @@ order, showing the project title and its color accent.
 - **THEN** the column header uses that color as its accent
 
 ### Requirement: Toggle split orientation
-The board SHALL let the user switch between a vertical and a horizontal split, and SHALL persist the
-choice across reloads.
+The board SHALL let the user choose the layout among **columns** (vertical split), **rows** (horizontal
+split), and **grid** (cards wrapped in a responsive grid), and SHALL persist the choice across reloads.
 
-#### Scenario: Switch orientation
-- **GIVEN** the board is in the vertical split
-- **WHEN** the user activates the orientation toggle
-- **THEN** the board re-lays out horizontally
+#### Scenario: Select a layout
+- **GIVEN** the board is in the columns layout
+- **WHEN** the user selects the grid layout from the control
+- **THEN** the board switches to the grid layout
 
-#### Scenario: Orientation persists across reloads
-- **GIVEN** the user selected the horizontal split
+#### Scenario: Grid layout wraps the project cards
+- **GIVEN** the board has several projects and the grid layout is selected
+- **WHEN** the board renders
+- **THEN** the project cards are laid out in a wrapping grid
+
+#### Scenario: Layout persists across reloads
+- **GIVEN** the user selected the grid layout
 - **WHEN** the app reloads
-- **THEN** the board restores the horizontal orientation
+- **THEN** the board restores the grid layout
 
 ### Requirement: Empty day state
 When the day has no projects, the board SHALL show an empty state rather than a blank void.

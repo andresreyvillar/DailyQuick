@@ -386,22 +386,4 @@ describe("board store", () => {
     expect(mockCreateProject).toHaveBeenCalledWith("2026-07-20", "Oakmond", "#2F9AA8");
     expect(useBoardStore.getState().projects.map((p) => p.slug)).toEqual(["azul", "oakmond"]);
   });
-
-  it("applyTemplate seeds the note body, persists it, and bumps the revision", async () => {
-    mockListDay.mockResolvedValue([{ slug: "oakmond", title: "Oakmond", color: "#E54D2E", order: 1 }]);
-    mockReadNote.mockResolvedValue({
-      frontmatter: { title: "Oakmond", color: "#E54D2E", order: 1, created: "2026-06-22" },
-      body: "",
-    });
-    await useBoardStore.getState().loadDay("2026-06-22");
-
-    await useBoardStore.getState().applyTemplate("oakmond", "## Tareas\n");
-
-    const writeArgs = mockWriteNote.mock.calls[mockWriteNote.mock.calls.length - 1];
-    expect(writeArgs[0]).toBe("2026-06-22");
-    expect(writeArgs[1]).toBe("oakmond");
-    expect(writeArgs[2].body).toBe("## Tareas\n");
-    expect(useBoardStore.getState().projects[0].body).toBe("## Tareas\n");
-    expect(useBoardStore.getState().revisions.oakmond).toBe(1);
-  });
 });

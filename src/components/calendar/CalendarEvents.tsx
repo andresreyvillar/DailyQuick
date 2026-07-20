@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { accentForKey } from "../../lib/accent-palette";
+import { DND_MIME, serializeDrag } from "../../lib/board-dnd";
 import { visibleEvents } from "../../lib/calendar-filter";
 import { listEvents, type CalendarEvent } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";
@@ -96,6 +97,8 @@ export function CalendarEvents() {
               <li key={key} className="relative">
                 <button
                   type="button"
+                  draggable
+                  onDragStart={(e) => e.dataTransfer.setData(DND_MIME, serializeDrag({ kind: "event", event }))}
                   aria-label={`Acciones de ${event.title}`}
                   title={event.title}
                   onClick={() => {

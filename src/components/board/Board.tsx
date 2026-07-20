@@ -1,3 +1,7 @@
+import { type DragEvent } from "react";
+
+import { nextAccent } from "../../lib/accent-palette";
+import { DND_MIME, parseDrag } from "../../lib/board-dnd";
 import { todayKey } from "../../lib/date-key";
 import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
@@ -21,10 +25,28 @@ export function Board() {
   const dayKey = useBoardStore((s) => s.dayKey);
   const contextCollapsed = useBoardStore((s) => s.contextCollapsed);
   const toggleContext = useBoardStore((s) => s.toggleContext);
+  const createProject = useBoardStore((s) => s.createProject);
+  const createProjectFromForecast = useBoardStore((s) => s.createProjectFromForecast);
+  const createProjectFromEvent = useBoardStore((s) => s.createProjectFromEvent);
   const theme = useThemeStore((s) => s.theme);
 
   // "vertical" split = side-by-side columns; "horizontal" split = stacked rows.
   const direction = orientation === "vertical" ? "flex-row" : "flex-col";
+
+  // Dropping a context chip (forecast / calendar event / recent) on the board creates that project.
+  function handleDrop(e: DragEvent) {
+    e.preventDefault();
+    const payload = parseDrag(e.dataTransfer.getData(DND_MIME));
+    if (!payload) return;
+    if (payload.kind === "forecast") {
+      void createProjectFromForecast(payload.project);
+    } else if (payload.kind === "event") {
+      void createProjectFromEvent(payload.event);
+    } else {
+      const used = projects.map((p) => p.frontmatter.color).filter((c): c is string => Boolean(c));
+      void createProject(payload.title, payload.color ?? nextAccent(used));
+    }
+  }
 
   return (
     <main className="flex h-screen flex-col bg-surface">
@@ -88,25 +110,32 @@ export function Board() {
         )}
       </div>
 
-      {projects.length === 0 ? (
-        <div
-          data-testid="empty-state"
-          className="flex flex-1 flex-col items-center justify-center gap-1 bg-sunken text-center"
-        >
-          <p className="text-[14px] font-medium text-muted">No hay proyectos para hoy todavía.</p>
-          <p className="text-[12.5px] text-faint">
-            Crea uno con “+ Nuevo proyecto” o desde un evento del calendario.
-          </p>
-        </div>
-      ) : (
-        <div className={`board-canvas flex flex-1 gap-3.5 overflow-auto bg-sunken p-4 ${direction}`}>
-          {projects.map((project) => (
-            <div key={project.slug} className="min-w-0 flex-1">
-              <ProjectColumn slug={project.slug} />
-            </div>
-          ))}
-        </div>
-      )}
+      <div
+        data-testid="board-dropzone"
+        className="flex min-h-0 flex-1 flex-col"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+      >
+        {projects.length === 0 ? (
+          <div
+            data-testid="empty-state"
+            className="flex flex-1 flex-col items-center justify-center gap-1 bg-sunken text-center"
+          >
+            <p className="text-[14px] font-medium text-muted">No hay proyectos para hoy todavía.</p>
+            <p className="text-[12.5px] text-faint">
+              Crea uno con “+ Nuevo proyecto”, o arrastra un evento o forecast aquí.
+            </p>
+          </div>
+        ) : (
+          <div className={`board-canvas flex flex-1 gap-3.5 overflow-auto bg-sunken p-4 ${direction}`}>
+            {projects.map((project) => (
+              <div key={project.slug} className="min-w-0 flex-1">
+                <ProjectColumn slug={project.slug} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }

@@ -107,3 +107,18 @@ export type CalendarInfo = z.infer<typeof calendarInfoSchema>;
 export async function listCalendars(): Promise<CalendarInfo[]> {
   return z.array(calendarInfoSchema).parse(await invoke("list_calendars"));
 }
+
+/** A forecasted project for a day, mirrors the Rust `ForecastProject`. */
+export const forecastProjectSchema = z.object({
+  code: z.string(),
+  name: z.string(),
+  hours: z.number(),
+  color: z.string().nullable().optional(),
+});
+
+export type ForecastProject = z.infer<typeof forecastProjectSchema>;
+
+/** Read the day's forecasted projects from the local cache. Missing cache/day → empty (no error). */
+export async function listForecast(dayKey: string): Promise<ForecastProject[]> {
+  return z.array(forecastProjectSchema).parse(await invoke("read_forecast", { key: dayKey }));
+}

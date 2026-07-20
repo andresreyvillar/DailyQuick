@@ -7,6 +7,7 @@ import {
   readNote,
   writeNote,
   type CalendarEvent,
+  type ForecastProject,
   type Frontmatter,
 } from "../lib/notes-api";
 import { addDays, todayKey } from "../lib/date-key";
@@ -51,6 +52,8 @@ type BoardState = {
   /** Per-project counter bumped on external writes, to force the editor to remount + reload. */
   revisions: Record<string, number>;
   createProjectFromEvent: (event: CalendarEvent) => Promise<void>;
+  /** Create a project column for a forecasted project (unused accent, empty body). */
+  createProjectFromForecast: (project: ForecastProject) => Promise<void>;
   addEventToProject: (slug: string, event: CalendarEvent) => Promise<void>;
   /** Seed an (empty) project note with template Markdown; reloads the editor via the revision bump. */
   applyTemplate: (slug: string, markdown: string) => Promise<void>;
@@ -187,6 +190,14 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       },
       body: eventProjectBody(event),
     });
+    await get().loadDay(dayKey);
+  },
+
+  async createProjectFromForecast(project) {
+    const { dayKey, projects } = get();
+    if (!dayKey) return;
+    const used = projects.map((p) => p.frontmatter.color).filter((c): c is string => Boolean(c));
+    await apiCreateProject(dayKey, project.name, nextAccent(used));
     await get().loadDay(dayKey);
   },
 

@@ -3,6 +3,7 @@
 
 pub mod date;
 pub mod error;
+pub mod forecast;
 pub mod frontmatter;
 pub mod path;
 pub mod search;

@@ -18,3 +18,14 @@ export function accentForKey(key: string): string {
   }
   return ACCENTS[hash % ACCENTS.length].hex;
 }
+
+/**
+ * Pick the first palette accent not already present in `used` (case-insensitive; non-palette colors
+ * are ignored, so they consume no slot). Falls back to a deterministic palette hex — never empty —
+ * when all six accents are in use.
+ */
+export function nextAccent(used: string[]): string {
+  const taken = new Set(used.map((hex) => hex.toLowerCase()));
+  const free = ACCENTS.find((accent) => !taken.has(accent.hex.toLowerCase()));
+  return (free ?? ACCENTS[used.length % ACCENTS.length]).hex;
+}

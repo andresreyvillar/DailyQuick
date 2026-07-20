@@ -11,8 +11,7 @@ import {
 } from "../lib/notes-api";
 import { addDays, todayKey } from "../lib/date-key";
 import { eventBlock, eventProjectBody } from "../lib/event-markdown";
-
-const EVENT_PROJECT_COLOR = "#3E63DD";
+import { nextAccent } from "../lib/accent-palette";
 
 export type Orientation = "vertical" | "horizontal";
 
@@ -110,10 +109,14 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     if (!dayKey) return;
     const previous = await listDay(addDays(dayKey, -1));
     const existing = new Set(projects.map((p) => p.slug));
+    // Accumulate colors as we go so a colorless source project falls back to an accent not yet used.
+    const used = projects.map((p) => p.frontmatter.color).filter((c): c is string => Boolean(c));
     for (const summary of previous) {
       if (existing.has(summary.slug)) continue;
+      const color = summary.color ?? nextAccent(used);
       try {
-        await apiCreateProject(dayKey, summary.title, summary.color ?? "#9aa0a9");
+        await apiCreateProject(dayKey, summary.title, color);
+        used.push(color);
       } catch {
         // Skip duplicates / invalid titles — carry-over never overwrites an existing note.
       }
@@ -171,9 +174,10 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   async createProjectFromEvent(event) {
-    const { dayKey } = get();
+    const { dayKey, projects } = get();
     if (!dayKey) return;
-    const summary = await apiCreateProject(dayKey, event.title, EVENT_PROJECT_COLOR);
+    const used = projects.map((p) => p.frontmatter.color).filter((c): c is string => Boolean(c));
+    const summary = await apiCreateProject(dayKey, event.title, nextAccent(used));
     await writeNote(dayKey, summary.slug, {
       frontmatter: {
         title: summary.title,

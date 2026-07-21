@@ -21,6 +21,8 @@ vi.mock("../forecast/ForecastProjects", () => ({ ForecastProjects: () => null })
 vi.mock("../forecast/RecommendedProjects", () => ({ RecommendedProjects: () => null }));
 // Stub the diary panel (rendered inside ProjectColumn; its own test covers it).
 vi.mock("../diary/DiaryPanel", () => ({ DiaryPanel: () => null }));
+// Stub the settings panel (its own test covers it; avoids the Tauri event listener here).
+vi.mock("../settings/SettingsPanel", () => ({ SettingsPanel: () => null }));
 
 import { listDay, readNote } from "../../lib/notes-api";
 import { DND_MIME, serializeDrag } from "../../lib/board-dnd";

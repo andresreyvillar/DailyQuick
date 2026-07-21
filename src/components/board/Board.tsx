@@ -20,6 +20,7 @@ import { OrientationToggle } from "./OrientationToggle";
 import { ProjectColumn } from "./ProjectColumn";
 import { SearchPanel } from "./SearchPanel";
 import { ThemeSelector } from "./ThemeSelector";
+import { SettingsPanel } from "../settings/SettingsPanel";
 
 /** The current-day board: header + calendar strip + per-project panes. */
 export function Board() {
@@ -227,6 +228,8 @@ export function Board() {
           onCancel={() => setPendingDelete(null)}
         />
       )}
+
+      <SettingsPanel />
     </main>
   );
 }

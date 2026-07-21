@@ -3,6 +3,7 @@
 
 pub mod date;
 pub mod diary;
+pub mod diary_sources;
 pub mod error;
 pub mod forecast;
 pub mod frontmatter;

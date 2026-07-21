@@ -144,3 +144,21 @@ export async function readDiary(dayKey: string, slug: string): Promise<DiaryEntr
   const raw = await invoke("read_diary", { key: dayKey, slug });
   return raw ? diaryEntrySchema.parse(raw) : null;
 }
+
+/** A project's diary sources: terms to search in Mail + Slack. Mirrors the Rust `DiarySource`. */
+export const diarySourceSchema = z.object({
+  searchTerms: z.array(z.string()).default([]),
+});
+
+export type DiarySource = z.infer<typeof diarySourceSchema>;
+
+/** Read a project's saved diary sources; empty defaults when none are set. */
+export async function readDiarySource(slug: string): Promise<DiarySource> {
+  const raw = await invoke("read_diary_source", { slug });
+  return raw ? diarySourceSchema.parse(raw) : { searchTerms: [] };
+}
+
+/** Persist a project's diary sources (consumed by the /project-diary producer). */
+export function setDiarySource(slug: string, source: DiarySource): Promise<void> {
+  return invoke<void>("set_diary_source", { slug, source });
+}

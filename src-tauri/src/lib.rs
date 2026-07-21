@@ -24,7 +24,9 @@ pub fn run() {
             commands::notes::list_events,
             commands::notes::list_calendars,
             commands::notes::read_forecast,
-            commands::notes::read_diary
+            commands::notes::read_diary,
+            commands::notes::read_diary_source,
+            commands::notes::set_diary_source
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

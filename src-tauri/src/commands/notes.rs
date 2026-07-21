@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use crate::fs::diary::{self, DiaryEntry};
+use crate::fs::diary_sources::{self, DiarySource};
 use crate::fs::forecast::{self, ForecastProject};
 use crate::fs::frontmatter::Note;
 use crate::fs::search::{self, SearchHit};
@@ -69,4 +70,14 @@ pub fn read_forecast(key: String) -> Result<Vec<ForecastProject>, StorageError> 
 #[tauri::command]
 pub fn read_diary(key: String, slug: String) -> Result<Option<DiaryEntry>, StorageError> {
     diary::read_diary(&root()?, &key, &slug)
+}
+
+#[tauri::command]
+pub fn read_diary_source(slug: String) -> Result<Option<DiarySource>, StorageError> {
+    diary_sources::read_diary_source(&root()?, &slug)
+}
+
+#[tauri::command]
+pub fn set_diary_source(slug: String, source: DiarySource) -> Result<(), StorageError> {
+    diary_sources::set_diary_source(&root()?, &slug, &source)
 }

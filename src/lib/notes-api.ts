@@ -167,3 +167,21 @@ export function setDiarySource(slug: string, source: DiarySource): Promise<void>
 export function syncDiary(dayKey: string): Promise<string> {
   return invoke<string>("sync_diary", { key: dayKey });
 }
+
+/** Status of the external accesses the diary depends on. Mirrors the Rust `AccessStatus`. */
+export const accessStatusSchema = z.object({
+  claude: z.string().nullable(),
+  slack: z.string(),
+});
+
+export type AccessStatus = z.infer<typeof accessStatusSchema>;
+
+/** Read the status of the Claude CLI + Slack MCP accesses. */
+export async function accessStatus(): Promise<AccessStatus> {
+  return accessStatusSchema.parse(await invoke("access_status"));
+}
+
+/** Test Apple Mail access (triggers the macOS Automation permission on first use). Rejects if denied. */
+export function testMailAccess(): Promise<string> {
+  return invoke<string>("test_mail_access");
+}

@@ -82,6 +82,62 @@ pub fn set_diary_source(slug: String, source: DiarySource) -> Result<(), Storage
     diary_sources::set_diary_source(&root()?, &slug, &source)
 }
 
+/// Status of the external accesses the diary depends on (for the Ajustes panel).
+#[derive(serde::Serialize)]
+pub struct AccessStatus {
+    /// `claude --version`, or `None` if the CLI is not found.
+    claude: Option<String>,
+    /// Slack MCP: "connected" | "needs-auth" | "not-configured" | "unknown".
+    slack: String,
+}
+
+#[tauri::command]
+pub fn access_status() -> AccessStatus {
+    let claude = std::process::Command::new("claude")
+        .arg("--version")
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string());
+
+    let slack = std::process::Command::new("claude")
+        .args(["mcp", "list"])
+        .output()
+        .ok()
+        .map(|o| {
+            let text = String::from_utf8_lossy(&o.stdout).to_lowercase();
+            match text.lines().find(|l| l.contains("slack")) {
+                None => "not-configured",
+                Some(l) if l.contains("needs authentication") => "needs-auth",
+                Some(l) if l.contains("connected") => "connected",
+                Some(_) => "unknown",
+            }
+            .to_string()
+        })
+        .unwrap_or_else(|| "unknown".to_string());
+
+    AccessStatus { claude, slack }
+}
+
+/// Test (and, on first use, trigger the macOS permission for) Apple Mail access via AppleScript.
+#[tauri::command]
+pub fn test_mail_access() -> Result<String, StorageError> {
+    let output = std::process::Command::new("osascript")
+        .arg("-e")
+        .arg("tell application \"Mail\" to get the count of accounts")
+        .output()
+        .map_err(|e| StorageError::Io(format!("no se pudo ejecutar osascript: {e}")))?;
+    if output.status.success() {
+        let count = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        Ok(format!("Acceso concedido · {count} cuentas de correo"))
+    } else {
+        Err(StorageError::Io(format!(
+            "acceso a Mail denegado o no disponible: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        )))
+    }
+}
+
 /// Trigger a diary sync by running the Claude Code `project-diary` producer headless (Slack + Apple Mail
 /// + AI live in Claude Code, not the app). Best-effort: depends on the local `claude` CLI + MCP/Mail setup.
 #[tauri::command]

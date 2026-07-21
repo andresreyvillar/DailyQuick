@@ -47,6 +47,9 @@ type BoardState = {
   /** Bumped after a diary sync so the diary panels re-read the cache. */
   diaryNonce: number;
   refreshDiary: () => void;
+  /** Whether the access-settings panel is open (opened from the native menu). */
+  settingsOpen: boolean;
+  setSettingsOpen: (open: boolean) => void;
   loadDay: (key: string) => Promise<void>;
   setOrientation: (orientation: Orientation) => void;
   toggleOrientation: () => void;
@@ -80,10 +83,15 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   orientation: loadOrientation(),
   contextCollapsed: loadContextCollapsed(),
   diaryNonce: 0,
+  settingsOpen: false,
   revisions: {},
 
   refreshDiary() {
     set({ diaryNonce: get().diaryNonce + 1 });
+  },
+
+  setSettingsOpen(settingsOpen) {
+    set({ settingsOpen });
   },
 
   async loadDay(key) {

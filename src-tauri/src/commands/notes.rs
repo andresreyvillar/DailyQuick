@@ -104,17 +104,13 @@ pub struct AccessStatus {
 
 #[tauri::command]
 pub fn access_status() -> AccessStatus {
-    let claude = std::process::Command::new("claude")
-        .arg("--version")
-        .output()
-        .ok()
+    let claude = crate::claude_cli::command()
+        .and_then(|mut c| c.arg("--version").output().ok())
         .filter(|o| o.status.success())
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string());
 
-    let slack = std::process::Command::new("claude")
-        .args(["mcp", "list"])
-        .output()
-        .ok()
+    let slack = crate::claude_cli::command()
+        .and_then(|mut c| c.args(["mcp", "list"]).output().ok())
         .map(|o| {
             let text = String::from_utf8_lossy(&o.stdout).to_lowercase();
             match text.lines().find(|l| l.contains("slack")) {
@@ -215,14 +211,16 @@ pub fn sync_project_diary(
          su entrada en ~/DailyQuick/.dailyquick/diary/{key}.json."
     );
 
-    let mut child = std::process::Command::new("claude")
-        .arg("-p")
+    let mut cmd = crate::claude_cli::command()
+        .ok_or_else(|| StorageError::Io("no se encontró el binario «claude»".to_string()))?;
+    cmd.arg("-p")
         .arg(&prompt)
         .args(["--output-format", "stream-json", "--verbose"])
         .args(["--permission-mode", "acceptEdits"])
         .current_dir(&home)
         .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null());
+    let mut child = cmd
         .spawn()
         .map_err(|e| StorageError::Io(format!("no se pudo ejecutar «claude»: {e}")))?;
 

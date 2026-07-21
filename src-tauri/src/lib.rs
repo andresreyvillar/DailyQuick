@@ -1,4 +1,5 @@
 mod calendar;
+mod claude_cli;
 mod commands;
 mod fs;
 

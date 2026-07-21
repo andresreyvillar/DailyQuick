@@ -7,6 +7,7 @@ vi.mock("../../lib/notes-api", () => ({
   writeNote: vi.fn(),
   ensureDay: vi.fn(),
   createProject: vi.fn(),
+  revealNote: vi.fn(),
 }));
 
 // The real editor is Milkdown/ProseMirror (can't run in jsdom); stub it as a textarea
@@ -35,11 +36,12 @@ vi.mock("../editor/MarkdownEditor", () => ({
   ),
 }));
 
-import { writeNote } from "../../lib/notes-api";
+import { revealNote, writeNote } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";
 import { ProjectColumn } from "./ProjectColumn";
 
 const mockWriteNote = vi.mocked(writeNote);
+const mockRevealNote = vi.mocked(revealNote);
 const FRONTMATTER = { title: "Oakmond", color: "#E54D2E", order: 1, created: "2026-06-21" };
 
 beforeEach(() => {
@@ -140,6 +142,13 @@ describe("ProjectColumn", () => {
     render(<ProjectColumn slug="oakmond" />);
     fireEvent.click(screen.getByRole("button", { name: "Acciones de Oakmond" }));
     expect(screen.getByText("Vincular fuentes")).toBeInTheDocument();
+  });
+
+  it("reveals the note in Finder for the viewed day from the actions menu", () => {
+    render(<ProjectColumn slug="oakmond" />);
+    fireEvent.click(screen.getByRole("button", { name: "Acciones de Oakmond" }));
+    fireEvent.click(screen.getByText("Mostrar en Finder"));
+    expect(mockRevealNote).toHaveBeenCalledWith("2026-06-21", "oakmond");
   });
 
   it("passes the project's accent to the editor", () => {

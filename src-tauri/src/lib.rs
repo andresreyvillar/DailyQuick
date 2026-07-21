@@ -38,6 +38,7 @@ pub fn run() {
             commands::notes::list_day,
             commands::notes::create_project,
             commands::notes::delete_note,
+            commands::notes::reveal_note,
             commands::notes::search_notes,
             commands::notes::list_events,
             commands::notes::list_calendars,

@@ -8,6 +8,7 @@ import {
   calendarInfoSchema,
   createProject,
   noteSchema,
+  revealNote,
   search,
   searchHitSchema,
 } from "./notes-api";
@@ -55,6 +56,14 @@ describe("createProject", () => {
   it("rejects an empty title without calling the backend", async () => {
     await expect(createProject("2026-06-21", "   ", "#000000")).rejects.toThrow();
     expect(mockInvoke).not.toHaveBeenCalled();
+  });
+});
+
+describe("revealNote", () => {
+  it("invokes reveal_note with the day key and slug", async () => {
+    mockInvoke.mockResolvedValue(undefined);
+    await revealNote("2026-06-21", "oakmond");
+    expect(mockInvoke).toHaveBeenCalledWith("reveal_note", { key: "2026-06-21", slug: "oakmond" });
   });
 });
 

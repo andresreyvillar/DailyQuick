@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { revealNote } from "../../lib/notes-api";
 import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
 import { useDebouncedSave } from "../../features/day/useDebouncedSave";
@@ -102,6 +103,19 @@ export function ProjectColumn({ slug }: { slug: string }) {
               <div className="absolute right-0 top-[30px] z-50 w-[224px] rounded-[10px] border border-line bg-surface p-1 text-left shadow-[0_8px_28px_rgba(20,24,33,0.16)]">
                 {!confirming ? (
                   <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        if (dayKey) void revealNote(dayKey, slug);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium text-body hover:bg-hover"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                      </svg>
+                      Mostrar en Finder
+                    </button>
                     <button
                       type="button"
                       onClick={() => {

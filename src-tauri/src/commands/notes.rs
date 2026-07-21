@@ -47,6 +47,17 @@ pub fn delete_note(key: String, slug: String) -> Result<(), StorageError> {
     store::delete_note(&root()?, &key, &slug)
 }
 
+/// Reveal a project's note file in the macOS Finder (file selected). Read-only: resolves + validates
+/// the path and reveals it via the opener plugin; `NotFound` if the note does not exist.
+#[tauri::command]
+pub fn reveal_note(app: tauri::AppHandle, key: String, slug: String) -> Result<(), StorageError> {
+    use tauri_plugin_opener::OpenerExt;
+    let target = store::note_path_for_reveal(&root()?, &key, &slug)?;
+    app.opener()
+        .reveal_item_in_dir(&target)
+        .map_err(|e| StorageError::Io(format!("could not reveal in Finder: {e}")))
+}
+
 #[tauri::command]
 pub fn search_notes(query: String) -> Result<Vec<SearchHit>, StorageError> {
     search::search(&root()?, &query)

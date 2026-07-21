@@ -62,6 +62,11 @@ export function deleteNote(key: string, slug: string): Promise<void> {
   return invoke<void>("delete_note", { key, slug });
 }
 
+/** Reveal a project's `.md` in the macOS Finder (file selected). Rejects with `NotFound` if absent. */
+export function revealNote(key: string, slug: string): Promise<void> {
+  return invoke<void>("reveal_note", { key, slug });
+}
+
 /** A single search result, mirrors the Rust `SearchHit`. */
 export const searchHitSchema = z.object({
   day_key: z.string(),

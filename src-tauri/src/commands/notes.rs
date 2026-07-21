@@ -81,3 +81,32 @@ pub fn read_diary_source(slug: String) -> Result<Option<DiarySource>, StorageErr
 pub fn set_diary_source(slug: String, source: DiarySource) -> Result<(), StorageError> {
     diary_sources::set_diary_source(&root()?, &slug, &source)
 }
+
+/// Trigger a diary sync by running the Claude Code `project-diary` producer headless (Slack + Apple Mail
+/// + AI live in Claude Code, not the app). Best-effort: depends on the local `claude` CLI + MCP/Mail setup.
+#[tauri::command]
+pub fn sync_diary(key: String) -> Result<String, StorageError> {
+    crate::fs::date::validate_key(&key)?;
+    let home = dirs::home_dir().ok_or_else(|| StorageError::Io("no home directory".to_string()))?;
+    let prompt = format!(
+        "Sincroniza el diario de DailyQuick para el día {key}: ejecuta el skill project-diary \
+         (busca en Apple Mail y Slack los términos de ~/DailyQuick/.dailyquick/diary-sources.json, \
+         por proyecto) y escribe ~/DailyQuick/.dailyquick/diary/{key}.json."
+    );
+    let output = std::process::Command::new("claude")
+        .arg("-p")
+        .arg(&prompt)
+        .arg("--permission-mode")
+        .arg("acceptEdits")
+        .current_dir(&home)
+        .output()
+        .map_err(|e| StorageError::Io(format!("no se pudo ejecutar «claude»: {e}")))?;
+    if output.status.success() {
+        Ok(String::from_utf8_lossy(&output.stdout).chars().take(400).collect())
+    } else {
+        Err(StorageError::Io(format!(
+            "la sincronización falló: {}",
+            String::from_utf8_lossy(&output.stderr).chars().take(300).collect::<String>()
+        )))
+    }
+}

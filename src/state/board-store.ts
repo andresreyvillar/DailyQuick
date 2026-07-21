@@ -44,6 +44,9 @@ type BoardState = {
   orientation: Orientation;
   /** Whether the day-context region (calendar + forecast) is collapsed. */
   contextCollapsed: boolean;
+  /** Bumped after a diary sync so the diary panels re-read the cache. */
+  diaryNonce: number;
+  refreshDiary: () => void;
   loadDay: (key: string) => Promise<void>;
   setOrientation: (orientation: Orientation) => void;
   toggleOrientation: () => void;
@@ -76,7 +79,12 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   projects: [],
   orientation: loadOrientation(),
   contextCollapsed: loadContextCollapsed(),
+  diaryNonce: 0,
   revisions: {},
+
+  refreshDiary() {
+    set({ diaryNonce: get().diaryNonce + 1 });
+  },
 
   async loadDay(key) {
     const summaries = await listDay(key);

@@ -8,6 +8,7 @@ const SOURCE_LABEL: Record<string, string> = { mail: "Mail", slack: "Slack" };
 /** Read-only "Diario" panel at the top of a project frame: an AI day-summary plus its source events. */
 export function DiaryPanel({ slug }: { slug: string }) {
   const dayKey = useBoardStore((s) => s.dayKey);
+  const diaryNonce = useBoardStore((s) => s.diaryNonce);
   const [entry, setEntry] = useState<DiaryEntry | null>(null);
 
   useEffect(() => {
@@ -19,7 +20,7 @@ export function DiaryPanel({ slug }: { slug: string }) {
     return () => {
       active = false;
     };
-  }, [dayKey, slug]);
+  }, [dayKey, slug, diaryNonce]);
 
   if (!entry) return null;
 

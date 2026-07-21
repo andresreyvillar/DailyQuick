@@ -162,3 +162,8 @@ export async function readDiarySource(slug: string): Promise<DiarySource> {
 export function setDiarySource(slug: string, source: DiarySource): Promise<void> {
   return invoke<void>("set_diary_source", { slug, source });
 }
+
+/** Trigger a diary sync (runs the Claude Code producer headless). Returns its output; rejects on failure. */
+export function syncDiary(dayKey: string): Promise<string> {
+  return invoke<string>("sync_diary", { key: dayKey });
+}

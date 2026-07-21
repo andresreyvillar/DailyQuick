@@ -126,6 +126,18 @@ pub fn delete_note(root: &Path, key: &str, slug: &str) -> Result<(), StorageErro
     }
 }
 
+/// Resolve a project note's on-disk path for revealing it in the OS file manager. Validates `key`/`slug`
+/// (confining the path to the day folder) and returns `NotFound` if the file is absent. Read-only:
+/// never creates or modifies anything.
+pub fn note_path_for_reveal(root: &Path, key: &str, slug: &str) -> Result<PathBuf, StorageError> {
+    let target = path::note_path(root, key, slug)?;
+    if target.exists() {
+        Ok(target)
+    } else {
+        Err(StorageError::NotFound)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::frontmatter::Frontmatter;
@@ -292,5 +304,36 @@ mod tests {
             Err(StorageError::NotFound)
         ));
         assert_eq!(read_note(root.path(), "2026-06-22", "oakmond").unwrap().body, "x");
+    }
+
+    #[test]
+    fn reveal_path_returns_existing_note_path() {
+        let root = tempdir().unwrap();
+        write_note(root.path(), "2026-06-21", "oakmond", &note("Oakmond", 1, "x")).unwrap();
+        let path = note_path_for_reveal(root.path(), "2026-06-21", "oakmond").unwrap();
+        assert_eq!(path, root.path().join("2026-06-21").join("oakmond.md"));
+        assert!(path.exists());
+    }
+
+    #[test]
+    fn reveal_path_missing_note_returns_not_found() {
+        let root = tempdir().unwrap();
+        assert!(matches!(
+            note_path_for_reveal(root.path(), "2026-06-21", "ghost"),
+            Err(StorageError::NotFound)
+        ));
+    }
+
+    #[test]
+    fn reveal_path_rejects_traversal() {
+        let root = tempdir().unwrap();
+        assert!(matches!(
+            note_path_for_reveal(root.path(), "2026-06-21", "../etc"),
+            Err(StorageError::InvalidSlug(_))
+        ));
+        assert!(matches!(
+            note_path_for_reveal(root.path(), "../2026", "oakmond"),
+            Err(StorageError::InvalidKey(_))
+        ));
     }
 }

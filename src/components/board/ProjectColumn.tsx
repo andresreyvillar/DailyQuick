@@ -5,6 +5,7 @@ import { useThemeStore } from "../../state/theme-store";
 import { useDebouncedSave } from "../../features/day/useDebouncedSave";
 import { DiaryPanel } from "../diary/DiaryPanel";
 import { DiarySourcesDialog } from "../diary/DiarySourcesDialog";
+import { ProjectSyncButton } from "../diary/ProjectSyncButton";
 import { MarkdownEditor } from "../editor/MarkdownEditor";
 import { ColorPicker } from "../ui/ColorPicker";
 
@@ -170,6 +171,7 @@ export function ProjectColumn({ slug }: { slug: string }) {
         )}
       </header>
       <div className="flex-1 rounded-b-[var(--radius-col)] bg-surface">
+        <ProjectSyncButton slug={slug} />
         <DiaryPanel slug={slug} />
         <MarkdownEditor
           key={`${dayKey}:${slug}:${revision}`}

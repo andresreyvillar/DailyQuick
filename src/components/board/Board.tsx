@@ -9,7 +9,6 @@ import { useThemeStore } from "../../state/theme-store";
 import { DeleteConfirm } from "./DeleteConfirm";
 import { CalendarEvents } from "../calendar/CalendarEvents";
 import { CalendarFilter } from "../calendar/CalendarFilter";
-import { SyncDiaryButton } from "../diary/SyncDiaryButton";
 import { ForecastProjects } from "../forecast/ForecastProjects";
 import { RecommendedProjects } from "../forecast/RecommendedProjects";
 import { AddProjectButton } from "./AddProjectButton";
@@ -101,7 +100,6 @@ export function Board() {
         </div>
         <div className="flex shrink-0 items-center gap-2.5">
           <SearchPanel />
-          <SyncDiaryButton />
           <CarryOverButton />
           <AddProjectButton />
           <OrientationToggle />

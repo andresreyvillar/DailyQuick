@@ -138,31 +138,99 @@ pub fn test_mail_access() -> Result<String, StorageError> {
     }
 }
 
-/// Trigger a diary sync by running the Claude Code `project-diary` producer headless (Slack + Apple Mail
-/// + AI live in Claude Code, not the app). Best-effort: depends on the local `claude` CLI + MCP/Mail setup.
+#[derive(Clone, serde::Serialize)]
+struct SyncProgress {
+    slug: String,
+    message: String,
+}
+
+#[derive(Clone, serde::Serialize)]
+struct SyncDone {
+    slug: String,
+    ok: bool,
+}
+
+/// Turn one `stream-json` line from `claude` into a short human-readable progress message (or None to skip).
+fn summarize_stream_line(line: &str) -> Option<String> {
+    let value: serde_json::Value = serde_json::from_str(line).ok()?;
+    match value.get("type")?.as_str()? {
+        "assistant" => {
+            let content = value.get("message")?.get("content")?.as_array()?;
+            let mut parts = Vec::new();
+            for block in content {
+                match block.get("type").and_then(|t| t.as_str()) {
+                    Some("text") => {
+                        let text = block.get("text").and_then(|t| t.as_str()).unwrap_or("").trim();
+                        if !text.is_empty() {
+                            parts.push(text.chars().take(240).collect::<String>());
+                        }
+                    }
+                    Some("tool_use") => {
+                        if let Some(name) = block.get("name").and_then(|n| n.as_str()) {
+                            parts.push(format!("→ {name}"));
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            (!parts.is_empty()).then(|| parts.join(" "))
+        }
+        "result" => value
+            .get("result")
+            .and_then(|r| r.as_str())
+            .map(|r| r.chars().take(240).collect()),
+        _ => None,
+    }
+}
+
+/// Sync ONE project's diary for `key` (today) by running the Claude Code `project-diary` producer headless
+/// in streaming mode, emitting each step as a `diary-sync-progress` event and a `diary-sync-done` at the end.
+/// Returns immediately (non-blocking); the work runs on a background thread. Best-effort: depends on the
+/// local `claude` CLI + MCP/Mail setup (Slack OAuth + AI live in Claude Code, not the app).
 #[tauri::command]
-pub fn sync_diary(key: String) -> Result<String, StorageError> {
+pub fn sync_project_diary(
+    app: tauri::AppHandle,
+    key: String,
+    slug: String,
+) -> Result<(), StorageError> {
+    use tauri::Emitter;
+
     crate::fs::date::validate_key(&key)?;
     let home = dirs::home_dir().ok_or_else(|| StorageError::Io("no home directory".to_string()))?;
     let prompt = format!(
-        "Sincroniza el diario de DailyQuick para el día {key}: ejecuta el skill project-diary \
-         (busca en Apple Mail y Slack los términos de ~/DailyQuick/.dailyquick/diary-sources.json, \
-         por proyecto) y escribe ~/DailyQuick/.dailyquick/diary/{key}.json."
+        "Sincroniza SOLO el proyecto «{slug}» del diario de DailyQuick para HOY ({key}): ejecuta el skill \
+         project-diary limitado a ese proyecto (usa sus searchTerms de ~/DailyQuick/.dailyquick/diary-sources.json, \
+         o su título si no está), busca en Apple Mail y Slack, narra brevemente qué vas encontrando, y escribe \
+         su entrada en ~/DailyQuick/.dailyquick/diary/{key}.json."
     );
-    let output = std::process::Command::new("claude")
+
+    let mut child = std::process::Command::new("claude")
         .arg("-p")
         .arg(&prompt)
-        .arg("--permission-mode")
-        .arg("acceptEdits")
+        .args(["--output-format", "stream-json", "--verbose"])
+        .args(["--permission-mode", "acceptEdits"])
         .current_dir(&home)
-        .output()
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::null())
+        .spawn()
         .map_err(|e| StorageError::Io(format!("no se pudo ejecutar «claude»: {e}")))?;
-    if output.status.success() {
-        Ok(String::from_utf8_lossy(&output.stdout).chars().take(400).collect())
-    } else {
-        Err(StorageError::Io(format!(
-            "la sincronización falló: {}",
-            String::from_utf8_lossy(&output.stderr).chars().take(300).collect::<String>()
-        )))
-    }
+
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| StorageError::Io("no se pudo leer la salida de «claude»".to_string()))?;
+
+    std::thread::spawn(move || {
+        use std::io::BufRead;
+        let reader = std::io::BufReader::new(stdout);
+        for line in reader.lines().map_while(Result::ok) {
+            if let Some(message) = summarize_stream_line(&line) {
+                let _ = app.emit("diary-sync-progress", SyncProgress { slug: slug.clone(), message });
+            }
+        }
+        let ok = child.wait().map(|status| status.success()).unwrap_or(false);
+        let _ = app.emit("diary-sync-done", SyncDone { slug, ok });
+    });
+
+    Ok(())
 }

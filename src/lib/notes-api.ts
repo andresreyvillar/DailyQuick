@@ -163,9 +163,9 @@ export function setDiarySource(slug: string, source: DiarySource): Promise<void>
   return invoke<void>("set_diary_source", { slug, source });
 }
 
-/** Trigger a diary sync (runs the Claude Code producer headless). Returns its output; rejects on failure. */
-export function syncDiary(dayKey: string): Promise<string> {
-  return invoke<string>("sync_diary", { key: dayKey });
+/** Start a per-project diary sync for the day (non-blocking; progress arrives via `diary-sync-*` events). */
+export function syncProjectDiary(dayKey: string, slug: string): Promise<void> {
+  return invoke<void>("sync_project_diary", { key: dayKey, slug });
 }
 
 /** Status of the external accesses the diary depends on. Mirrors the Rust `AccessStatus`. */

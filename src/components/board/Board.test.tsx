@@ -23,6 +23,8 @@ vi.mock("../forecast/RecommendedProjects", () => ({ RecommendedProjects: () => n
 vi.mock("../diary/DiaryPanel", () => ({ DiaryPanel: () => null }));
 // Stub the settings panel (its own test covers it; avoids the Tauri event listener here).
 vi.mock("../settings/SettingsPanel", () => ({ SettingsPanel: () => null }));
+// Stub the per-project sync button (its own test covers it; ProjectColumn renders it).
+vi.mock("../diary/ProjectSyncButton", () => ({ ProjectSyncButton: () => null }));
 
 import { listDay, readNote } from "../../lib/notes-api";
 import { DND_MIME, serializeDrag } from "../../lib/board-dnd";

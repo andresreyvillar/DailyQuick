@@ -15,11 +15,15 @@ export function ProjectSyncButton({ slug }: { slug: string }) {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
+    let cancelled = false;
     const unlisteners: UnlistenFn[] = [];
+    // If the effect is cleaned up before `listen` resolves, unlisten immediately (avoids leaked
+    // listeners on StrictMode double-mount, which duplicated the progress/done log lines).
+    const track = (u: UnlistenFn) => (cancelled ? u() : unlisteners.push(u));
     listen<Progress>("diary-sync-progress", (e) => {
       if (e.payload.slug === slug) setLog((prev) => [...prev, e.payload.message]);
     })
-      .then((u) => unlisteners.push(u))
+      .then(track)
       .catch(() => {});
     listen<Done>("diary-sync-done", (e) => {
       if (e.payload.slug !== slug) return;
@@ -27,9 +31,12 @@ export function ProjectSyncButton({ slug }: { slug: string }) {
       setLog((prev) => [...prev, e.payload.ok ? "✓ Sincronizado" : "✗ La sincronización falló"]);
       if (e.payload.ok) refreshDiary();
     })
-      .then((u) => unlisteners.push(u))
+      .then(track)
       .catch(() => {});
-    return () => unlisteners.forEach((u) => u());
+    return () => {
+      cancelled = true;
+      unlisteners.forEach((u) => u());
+    };
   }, [slug, refreshDiary]);
 
   async function start() {

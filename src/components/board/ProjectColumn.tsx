@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { revealNote } from "../../lib/notes-api";
+import { todayKey } from "../../lib/date-key";
 import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
 import { useDebouncedSave } from "../../features/day/useDebouncedSave";
@@ -185,7 +186,8 @@ export function ProjectColumn({ slug }: { slug: string }) {
         )}
       </header>
       <div className="flex-1 rounded-b-[var(--radius-col)] bg-surface">
-        <ProjectSyncButton slug={slug} />
+        {/* Diary sync is today-only; hide the control on other days (the panel still shows cached history). */}
+        {dayKey === todayKey() && <ProjectSyncButton slug={slug} />}
         <DiaryPanel slug={slug} />
         <MarkdownEditor
           key={`${dayKey}:${slug}:${revision}`}

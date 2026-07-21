@@ -76,11 +76,18 @@ export function Board() {
   const isGrid = orientation === "grid";
   const direction = orientation === "vertical" ? "flex-row" : "flex-col";
 
-  // Dropping a context chip (forecast / calendar event / recent) on the board creates that project.
+  // Allow the drop anywhere on the board for our chips only (capture phase, so it works over a project
+  // frame before its editor claims the drop). Non-chip drags (text/files into a note) fall through.
+  function handleDragOver(e: DragEvent) {
+    if (e.dataTransfer.types.includes(DND_MIME)) e.preventDefault();
+  }
+
+  // Dropping a context chip (forecast / calendar event / recent) anywhere on the board creates that project.
   function handleDrop(e: DragEvent) {
-    e.preventDefault();
     const payload = parseDrag(e.dataTransfer.getData(DND_MIME));
-    if (!payload) return;
+    if (!payload) return; // not our chip → let the editor handle it (e.g. text/file into a note)
+    e.preventDefault();
+    e.stopPropagation();
     if (payload.kind === "forecast") {
       void createProjectFromForecast(payload.project);
     } else if (payload.kind === "event") {
@@ -157,8 +164,8 @@ export function Board() {
         ref={dropzoneRef}
         data-testid="board-dropzone"
         className="flex min-h-0 flex-1 flex-col"
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
+        onDragOverCapture={handleDragOver}
+        onDropCapture={handleDrop}
       >
         {projects.length === 0 ? (
           <div

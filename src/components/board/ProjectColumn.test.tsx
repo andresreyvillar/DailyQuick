@@ -11,8 +11,9 @@ vi.mock("../../lib/notes-api", () => ({
 
 // The real editor is Milkdown/ProseMirror (can't run in jsdom); stub it as a textarea
 // that forwards its value to `onChange`, so we can test the persistence wiring.
-// Stub the diary panel (its own test covers it; avoids the async cache read here).
+// Stub the diary panel + sources dialog (their own tests cover them; avoids async reads here).
 vi.mock("../diary/DiaryPanel", () => ({ DiaryPanel: () => null }));
+vi.mock("../diary/DiarySourcesDialog", () => ({ DiarySourcesDialog: () => null }));
 
 vi.mock("../editor/MarkdownEditor", () => ({
   MarkdownEditor: ({
@@ -132,6 +133,12 @@ describe("ProjectColumn", () => {
     fireEvent.click(screen.getByText("Eliminar proyecto"));
     fireEvent.click(screen.getByRole("button", { name: "Eliminar" }));
     expect(deleteProject).toHaveBeenCalledWith("oakmond");
+  });
+
+  it("offers 'Vincular fuentes' in the actions menu", () => {
+    render(<ProjectColumn slug="oakmond" />);
+    fireEvent.click(screen.getByRole("button", { name: "Acciones de Oakmond" }));
+    expect(screen.getByText("Vincular fuentes")).toBeInTheDocument();
   });
 
   it("passes the project's accent to the editor", () => {

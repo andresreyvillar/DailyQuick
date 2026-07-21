@@ -4,6 +4,7 @@ import { useBoardStore } from "../../state/board-store";
 import { useThemeStore } from "../../state/theme-store";
 import { useDebouncedSave } from "../../features/day/useDebouncedSave";
 import { DiaryPanel } from "../diary/DiaryPanel";
+import { DiarySourcesDialog } from "../diary/DiarySourcesDialog";
 import { MarkdownEditor } from "../editor/MarkdownEditor";
 import { ColorPicker } from "../ui/ColorPicker";
 
@@ -24,6 +25,7 @@ export function ProjectColumn({ slug }: { slug: string }) {
   const [draftTitle, setDraftTitle] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   if (!project) return null;
 
@@ -98,16 +100,32 @@ export function ProjectColumn({ slug }: { slug: string }) {
               <div className="fixed inset-0 z-40" onClick={closeMenu} aria-hidden="true" />
               <div className="absolute right-0 top-[30px] z-50 w-[224px] rounded-[10px] border border-line bg-surface p-1 text-left shadow-[0_8px_28px_rgba(20,24,33,0.16)]">
                 {!confirming ? (
-                  <button
-                    type="button"
-                    onClick={() => setConfirming(true)}
-                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium text-[#E5484D] hover:bg-[#FDF0F0]"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                    </svg>
-                    Eliminar proyecto
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setSourcesOpen(true);
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium text-body hover:bg-hover"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                        <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                      </svg>
+                      Vincular fuentes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirming(true)}
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium text-[#E5484D] hover:bg-[#FDF0F0]"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                      </svg>
+                      Eliminar proyecto
+                    </button>
+                  </>
                 ) : (
                   <div className="px-2 py-1.5">
                     <p className="mb-2 text-[12.5px] text-body">
@@ -163,6 +181,10 @@ export function ProjectColumn({ slug }: { slug: string }) {
           }}
         />
       </div>
+
+      {sourcesOpen && (
+        <DiarySourcesDialog slug={slug} title={title} onClose={() => setSourcesOpen(false)} />
+      )}
     </section>
   );
 }

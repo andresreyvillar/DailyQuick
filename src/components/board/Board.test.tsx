@@ -115,6 +115,19 @@ describe("Board", () => {
     expect(spy).toHaveBeenCalledWith({ code: "DUI2601", name: "Duin" });
   });
 
+  it("creates a project when a chip is dropped over an existing project frame", async () => {
+    await seedTwoProjects();
+    const spy = vi.fn();
+    useBoardStore.setState({ createProjectFromForecast: spy });
+    render(<Board />);
+    const frame = document.querySelector("[data-frame-index]");
+    const data = serializeDrag({ kind: "forecast", project: { code: "DUI2601", name: "Duin" } });
+    fireEvent.drop(frame as Element, {
+      dataTransfer: { getData: (t: string) => (t === DND_MIME ? data : "") },
+    });
+    expect(spy).toHaveBeenCalledWith({ code: "DUI2601", name: "Duin" });
+  });
+
   it("creates a project from an event when a calendar chip is dropped", () => {
     const spy = vi.fn();
     useBoardStore.setState({ dayKey: "2026-07-20", projects: [], createProjectFromEvent: spy });
